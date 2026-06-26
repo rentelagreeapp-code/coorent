@@ -81,7 +81,7 @@ class AuthController extends GetxController {
       mobileNumber.value = mobile;
       final response = await _authRepository.sendOtp(mobile);
       verificationOtp.value = response['data']['otp'] ?? '';
-      
+      print ( "response "+verificationOtp.value );
       Get.snackbar(
         'OTP Sent',
         'Your test OTP code is: ${verificationOtp.value}',

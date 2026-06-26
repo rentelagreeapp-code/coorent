@@ -8,6 +8,8 @@ import 'package:coorent/controllers/profile_controller.dart';
 import 'package:coorent/controllers/booking_controller.dart';
 import 'package:coorent/controllers/map_controller.dart';
 
+import 'package:coorent/repositories/booking_repository.dart';
+
 class AppBindings extends Bindings {
   @override
   void dependencies() {
@@ -18,8 +20,10 @@ class AppBindings extends Bindings {
     // Repositories
     final authRepository = AuthRepository(apiClient);
     final userRepository = UserRepository(apiClient);
+    final bookingRepository = BookingRepository(apiClient);
     Get.put<AuthRepository>(authRepository, permanent: true);
     Get.put<UserRepository>(userRepository, permanent: true);
+    Get.put<BookingRepository>(bookingRepository, permanent: true);
 
     // Controllers
     Get.put<AuthController>(AuthController(authRepository), permanent: true);

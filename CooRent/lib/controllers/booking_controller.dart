@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:coorent/repositories/booking_repository.dart';
+import 'package:coorent/models/rental_service_model.dart';
 
 class BookingItem {
   final String id;
@@ -11,8 +13,25 @@ class BookingItem {
 }
 
 class BookingController extends GetxController {
+  final BookingRepository _bookingRepository = Get.find<BookingRepository>();
+
   var bookings = <BookingItem>[
     BookingItem(id: 'BK-1089', serviceName: 'Tractor Rental (John Deere)', date: 'June 28, 2026', status: 'Confirmed', cost: '₹4,500'),
     BookingItem(id: 'BK-2034', serviceName: 'Labor Service (3 workers)', date: 'July 02, 2026', status: 'Pending', cost: '₹2,400'),
   ].obs;
+
+  var isLoading = false.obs;
+  var servicesList = <RentalServiceModel>[].obs;
+
+  Future<void> fetchServicesByCategory(String categoryName) async {
+    isLoading.value = true;
+    try {
+      final list = await _bookingRepository.getServicesByCategory(categoryName);
+      servicesList.assignAll(list);
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }
