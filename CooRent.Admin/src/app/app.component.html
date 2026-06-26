@@ -1,0 +1,100 @@
+<!-- Admin Login Template -->
+<div *ngIf="!isLoggedIn" class="login-container">
+  <div class="login-card">
+    <div class="logo">
+      <span class="material-icons">security</span>
+    </div>
+    <h2>CooRent Admin Portal</h2>
+    <p>Sign in to manage catalog items & services</p>
+    
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" [(ngModel)]="username" placeholder="Enter username (default: admin)">
+    </div>
+    
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" placeholder="Enter password (default: admin123)">
+    </div>
+    
+    <div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
+    
+    <button (click)="login()" class="btn-primary">Login</button>
+  </div>
+</div>
+
+<!-- Admin Dashboard Layout -->
+<div *ngIf="isLoggedIn" class="dashboard-layout">
+  <header class="header">
+    <div class="header-brand">
+      <span class="material-icons">dashboard</span>
+      <h1>CooRent Admin Console</h1>
+    </div>
+    <div class="header-user">
+      <span>Welcome, <strong>{{ username }}</strong></span>
+      <button (click)="logout()" class="btn-outline">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="split-layout">
+      <!-- Create Service Panel -->
+      <section class="panel form-panel">
+        <h3>Add Rental Service</h3>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="categoryName">
+            <option value="Tractor Rental">Tractor Rental</option>
+            <option value="Harvester Rental">Harvester Rental</option>
+            <option value="Equipment Rental">Equipment Rental</option>
+            <option value="Transport">Transport</option>
+            <option value="Seeds">Seeds</option>
+            <option value="Labor">Labor</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" [(ngModel)]="title" placeholder="e.g. John Deere 5050D">
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="description" placeholder="Enter service description details..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Price Details</label>
+          <input type="text" [(ngModel)]="priceDetails" placeholder="e.g. ₹800 / hr">
+        </div>
+
+        <div class="form-group">
+          <label>Image URL</label>
+          <input type="text" [(ngModel)]="imageUrl" placeholder="Paste product image URL">
+        </div>
+
+        <button (click)="createService()" class="btn-primary">Create Service</button>
+      </section>
+
+      <!-- Services List Panel -->
+      <section class="panel list-panel">
+        <h3>Current Catalog Listings</h3>
+        
+        <div class="services-list">
+          <div *ngFor="let item of services" class="service-card">
+            <img [src]="item.imageUrl" alt="Service Image">
+            <div class="service-details">
+              <h4>{{ item.title }}</h4>
+              <span class="badge">{{ item.categoryName }}</span>
+              <p>{{ item.description }}</p>
+              <div class="price-action">
+                <span class="price">{{ item.priceDetails }}</span>
+                <button (click)="deleteService(item.id)" class="btn-danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
