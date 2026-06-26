@@ -128,23 +128,26 @@ class DashboardView extends StatelessWidget {
                             onTap: () {
                               Get.toNamed('/services', arguments: service.name);
                             },
-                            child: Padding(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(service.imageUrl),
+                                  fit: BoxFit.cover,
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.black.withOpacity(0.55),
+                                    BlendMode.darken,
+                                  ),
+                                ),
+                              ),
                               padding: const EdgeInsets.all(12.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: service.color.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      service.icon,
-                                      color: service.color,
-                                      size: 24,
-                                    ),
+                                  Icon(
+                                    service.icon,
+                                    color: Colors.white,
+                                    size: 24,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -152,6 +155,7 @@ class DashboardView extends StatelessWidget {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
+                                      color: Colors.white,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
