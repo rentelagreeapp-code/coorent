@@ -4,8 +4,7 @@ WORKDIR /app
 
 # Copy csproj and restore dependencies
 COPY CooRent.Api/*.csproj ./CooRent.Api/
-COPY CooRent.sln ./
-RUN dotnet restore CooRent.sln
+RUN dotnet restore CooRent.Api/CooRent.Api.csproj
 
 # Copy remaining source code and build
 COPY CooRent.Api/ ./CooRent.Api/
