@@ -7,7 +7,7 @@ import 'package:coorent/core/storage/secure_storage_service.dart';
 class ApiClient {
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'http://10.0.2.2:5000', // Default Android Emulator Loopback Address
+      baseUrl: 'https://coorent.onrender.com', // Render Cloud Hosted instance
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       contentType: 'application/json',
