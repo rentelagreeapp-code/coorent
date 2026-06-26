@@ -20,7 +20,12 @@ namespace CooRent.Api.Api.Controllers
         {
             _context = context;
         }
-
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var services = await _context.Set<RentalService>().ToListAsync();
+            return Ok(ApiResponse<List<RentalService>>.SuccessResponse(services, "All services retrieved successfully"));
+        }
         [HttpGet("{categoryName}")]
         public async Task<IActionResult> GetByCategory(string categoryName)
         {
