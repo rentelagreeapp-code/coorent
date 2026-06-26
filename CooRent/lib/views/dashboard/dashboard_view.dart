@@ -112,42 +112,42 @@ class DashboardView extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 12),
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 2.2,
-                    ),
+                 SizedBox(
+                  height: 95,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
                     itemCount: _dashboardController.services.length,
                     itemBuilder: (context, index) {
                       final service = _dashboardController.services[index];
-                      return Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () {
-                            Get.toNamed('/services', arguments: service.name);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: service.color.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(8),
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 12),
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () {
+                              Get.toNamed('/services', arguments: service.name);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: service.color.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      service.icon,
+                                      color: service.color,
+                                      size: 24,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    service.icon,
-                                    color: service.color,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
+                                  const SizedBox(height: 8),
+                                  Text(
                                     service.name,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -156,8 +156,8 @@ class DashboardView extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
