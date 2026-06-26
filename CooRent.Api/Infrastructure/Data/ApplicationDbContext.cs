@@ -12,6 +12,7 @@ namespace CooRent.Api.Infrastructure.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Otp> Otps => Set<Otp>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<RentalService> RentalServices => Set<RentalService>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
