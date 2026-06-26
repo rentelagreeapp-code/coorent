@@ -97,7 +97,7 @@ class DashboardView extends StatelessWidget {
   Widget _buildHomeTab(BuildContext context) {
     return Column(
       children: [
-        // Top Half - Service Grid
+        // Top Half - Service Grid (25% height)
         Expanded(
           flex: 1,
           child: Padding(
@@ -170,9 +170,9 @@ class DashboardView extends StatelessWidget {
           ),
         ),
         
-        // Bottom Half - Google Maps
+        // Bottom Half - Google Maps (75% height)
         Expanded(
-          flex: 1,
+          flex: 3,
           child: Stack(
             children: [
               Obx(() => GoogleMap(
