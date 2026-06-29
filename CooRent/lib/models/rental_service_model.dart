@@ -11,7 +11,7 @@ class RentalServiceModel {
 
   RentalServiceModel({
     required this.id,
-    required this.categoryId,
+    this.categoryId = '',
     required this.categoryName,
     required this.title,
     required this.description,
