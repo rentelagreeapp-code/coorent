@@ -106,11 +106,37 @@ class DashboardView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Our Rental Services',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Rental Services',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Get.snackbar(
+                          'Supplier Portal',
+                          'Opening Supplier Dashboard...',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          colorText: Colors.white,
+                        );
+                      },
+                      icon: const Icon(Icons.business_center_rounded, size: 14),
+                      label: const Text(
+                        'Supplier',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                  Obx(() => SizedBox(
