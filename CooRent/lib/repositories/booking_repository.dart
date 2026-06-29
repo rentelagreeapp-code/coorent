@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:coorent/core/api/api_client.dart';
 import 'package:coorent/models/rental_service_model.dart';
+import 'package:coorent/models/equipment_model.dart';
 
 class BookingRepository {
   final ApiClient _apiClient;
@@ -60,6 +61,36 @@ class BookingRepository {
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to create service');
+    }
+  }
+
+  Future<List<EquipmentModel>> getAllEquipments() async {
+    try {
+      final response = await _apiClient.dio.get('/api/equipments');
+      if (response.data['success'] == true) {
+        final List list = response.data['data'] ?? [];
+        return list.map((item) => EquipmentModel.fromJson(item)).toList();
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load equipments');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to load equipments');
+    }
+  }
+
+  Future<EquipmentModel> createEquipment(EquipmentModel equipment) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/api/equipments',
+        data: equipment.toJson(),
+      );
+      if (response.data['success'] == true) {
+        return EquipmentModel.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to create equipment');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to create equipment');
     }
   }
 }
