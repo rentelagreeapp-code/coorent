@@ -184,7 +184,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
 
     final newEquipment = EquipmentModel(
       id: '',
-      categoryId: _eSelectedCategoryModel!.id,
+      categoryId: _eSelectedCategoryModel!.categoryId,
       userId: '00000000-0000-0000-0000-000000000000', // Default empty GUID placeholder
       equipmentName: _eNameController.text.trim(),
       description: _eDescriptionController.text.trim(),

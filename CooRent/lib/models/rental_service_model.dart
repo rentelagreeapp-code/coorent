@@ -1,5 +1,6 @@
 class RentalServiceModel {
   final String id;
+  final String categoryId;
   final String categoryName;
   final String title;
   final String description;
@@ -10,6 +11,7 @@ class RentalServiceModel {
 
   RentalServiceModel({
     required this.id,
+    required this.categoryId,
     required this.categoryName,
     required this.title,
     required this.description,
@@ -22,6 +24,7 @@ class RentalServiceModel {
   factory RentalServiceModel.fromJson(Map<String, dynamic> json) {
     return RentalServiceModel(
       id: json['id'] ?? '',
+      categoryId: json['categoryId'] ?? '',
       categoryName: json['categoryName'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',

@@ -8,6 +8,8 @@ namespace CooRent.Api.Core.Entities
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
+        public Guid CategoryId { get; set; } = Guid.NewGuid();
+
         [Required]
         [MaxLength(100)]
         public string CategoryName { get; set; } = string.Empty; // e.g. Tractor Rental

@@ -125,6 +125,8 @@ using (var scope = app.Services.CreateScope())
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Latitude"" double precision;
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Longitude"" double precision;
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""IsDeleted"" boolean DEFAULT false;
+                    ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""CategoryId"" uuid;
+                    UPDATE public.""RentalServices"" SET ""CategoryId"" = ""Id"" WHERE ""CategoryId"" IS NULL;
 
                     CREATE TABLE IF NOT EXISTS public.""Equipments"" (
                         ""Id"" uuid NOT NULL,
