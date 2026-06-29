@@ -172,6 +172,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await loadAllData();
       await _mapController.loadRentals();
     } catch (e) {
+      print("exexpetion"+e.toString());
       Get.snackbar('Error', 'Failed to add service record: $e',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
     } finally {
