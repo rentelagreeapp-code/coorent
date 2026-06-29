@@ -32,8 +32,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   final _sLatController = TextEditingController();
   final _sLngController = TextEditingController();
   String? _selectedCategory;
-  final _customCategoryController = TextEditingController();
-  bool _isCustomCategory = false;
 
   // Equipment form controllers
   final _eNameController = TextEditingController();
@@ -65,7 +63,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     _sImageUrlController.dispose();
     _sLatController.dispose();
     _sLngController.dispose();
-    _customCategoryController.dispose();
 
     _eNameController.dispose();
     _eDescriptionController.dispose();
