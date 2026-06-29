@@ -36,4 +36,28 @@ class BookingRepository {
       throw Exception(e.response?.data['message'] ?? 'Failed to load services');
     }
   }
+
+  Future<RentalServiceModel> createService(RentalServiceModel service) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/api/services',
+        data: {
+          'categoryName': service.categoryName,
+          'title': service.title,
+          'description': service.description,
+          'priceDetails': service.priceDetails,
+          'imageUrl': service.imageUrl,
+          'latitude': service.latitude,
+          'longitude': service.longitude,
+        },
+      );
+      if (response.data['success'] == true) {
+        return RentalServiceModel.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to create service');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to create service');
+    }
+  }
 }

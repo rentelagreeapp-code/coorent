@@ -44,6 +44,18 @@ namespace CooRent.Api.Api.Controllers
             return Ok(ApiResponse<List<RentalService>>.SuccessResponse(services, "Services retrieved successfully"));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] RentalService service)
+        {
+            if (service == null) 
+                return BadRequest(ApiResponse<string>.FailureResponse("Invalid service data"));
+
+            await _context.Set<RentalService>().AddAsync(service);
+            await _context.SaveChangesAsync();
+
+            return Ok(ApiResponse<RentalService>.SuccessResponse(service, "Service created successfully"));
+        }
+
         private List<RentalService> GetSeedData(string categoryName)
         {
             return new List<RentalService>

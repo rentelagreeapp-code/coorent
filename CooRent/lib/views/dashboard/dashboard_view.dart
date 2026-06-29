@@ -117,13 +117,7 @@ class DashboardView extends StatelessWidget {
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Get.snackbar(
-                          'Supplier Portal',
-                          'Opening Supplier Dashboard...',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          colorText: Colors.white,
-                        );
+                        Get.toNamed('/supplier-dashboard');
                       },
                       icon: const Icon(Icons.business_center_rounded, size: 14),
                       label: const Text(

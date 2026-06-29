@@ -6,6 +6,7 @@ import 'package:coorent/views/otp/otp_view.dart';
 import 'package:coorent/views/register/register_view.dart';
 import 'package:coorent/views/dashboard/dashboard_view.dart';
 import 'package:coorent/views/services/services_view.dart';
+import 'package:coorent/views/dashboard/supplier_dashboard_view.dart';
 
 class AppRoutes {
   static const initial = '/';
@@ -35,6 +36,10 @@ class AppRoutes {
     GetPage(
       name: '/services',
       page: () => const ServicesView(),
+    ),
+    GetPage(
+      name: '/supplier-dashboard',
+      page: () => const SupplierDashboardView(),
     ),
   ];
 }

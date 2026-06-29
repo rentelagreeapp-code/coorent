@@ -29,5 +29,8 @@ namespace CooRent.Api.Core.Entities
         public string ImageUrl { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
     }
 }
