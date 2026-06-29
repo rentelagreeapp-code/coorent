@@ -123,27 +123,44 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       return;
     }
 
-    final double? lat = double.tryParse(_sLatController.text);
-    final double? lng = double.tryParse(_sLngController.text);
+    final double lat = double.tryParse(_sLatController.text) ?? 0.0;
+    final double lng = double.tryParse(_sLngController.text) ?? 0.0;
 
-    final newService = RentalServiceModel(
+    final List<String> images = [];
+    if (_sImageUrlController.text.trim().isNotEmpty) {
+      images.add(_sImageUrlController.text.trim());
+    } else {
+      images.add('https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png');
+    }
+
+    // Link categoryId GUID dynamically from master category list
+    String categoryGuid = '00000000-0000-0000-0000-000000000000';
+    if (!_isCustomCategory && _selectedCategory != null) {
+      final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
+      if (matched != null) {
+        categoryGuid = matched.categoryId;
+      }
+    }
+
+    final newEquipment = EquipmentModel(
       id: '',
-      categoryName: category,
-      title: _sTitleController.text.trim(),
+      categoryId: categoryGuid,
+      userId: _authController.currentUserId.value.isNotEmpty 
+          ? _authController.currentUserId.value 
+          : '00000000-0000-0000-0000-000000000000',
+      equipmentName: _sTitleController.text.trim(),
       description: _sDescriptionController.text.trim(),
-      priceDetails: _sPriceController.text.trim(),
-      imageUrl: _sImageUrlController.text.trim().isNotEmpty
-          ? _sImageUrlController.text.trim()
-          : 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png',
+      price: _sPriceController.text.trim(),
       latitude: lat,
       longitude: lng,
+      equipmentImages: images,
     );
 
     isLoading.value = true;
     try {
-      await _bookingRepository.createService(newService);
+      await _bookingRepository.createEquipment(newEquipment);
       Navigator.pop(context);
-      Get.snackbar('Success', 'Rental service added successfully!',
+      Get.snackbar('Success', 'Rental service record added to Equipments successfully!',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
       
       _sTitleController.clear();
@@ -155,7 +172,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await loadAllData();
       await _mapController.loadRentals();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add service: $e',
+      Get.snackbar('Error', 'Failed to add service record: $e',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
     } finally {
       isLoading.value = false;
