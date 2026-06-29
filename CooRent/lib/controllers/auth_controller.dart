@@ -52,6 +52,11 @@ class AuthController extends GetxController {
     final refreshToken = await _storage.getRefreshToken();
     final expiryStr = await _storage.getTokenExpiry();
     final userJson = await _storage.getUserData();
+    final userId = await _storage.getUserId();
+
+    if (userId != null) {
+      currentUserId.value = userId;
+    }
 
     if (accessToken != null && refreshToken != null && expiryStr != null) {
       final expiry = DateTime.parse(expiryStr);
@@ -178,6 +183,8 @@ class AuthController extends GetxController {
     await _storage.saveTokenExpiry(data.accessTokenExpiry);
     if (data.user != null) {
       currentUser.value = data.user;
+      currentUserId.value = data.user!.id;
+      await _storage.saveUserId(data.user!.id);
       await _storage.saveUserData(jsonEncode(data.user!.toJson()));
     }
   }

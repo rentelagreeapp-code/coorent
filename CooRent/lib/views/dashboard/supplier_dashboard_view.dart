@@ -4,6 +4,7 @@ import 'package:coorent/controllers/map_controller.dart';
 import 'package:coorent/models/rental_service_model.dart';
 import 'package:coorent/models/equipment_model.dart';
 import 'package:coorent/repositories/booking_repository.dart';
+import 'package:coorent/controllers/auth_controller.dart';
 
 class SupplierDashboardView extends StatefulWidget {
   const SupplierDashboardView({super.key});
@@ -15,6 +16,7 @@ class SupplierDashboardView extends StatefulWidget {
 class _SupplierDashboardViewState extends State<SupplierDashboardView> with SingleTickerProviderStateMixin {
   final BookingRepository _bookingRepository = Get.find<BookingRepository>();
   final MapController _mapController = Get.find<MapController>();
+  final AuthController _authController = Get.find<AuthController>();
 
   late TabController _tabController;
 
@@ -185,7 +187,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     final newEquipment = EquipmentModel(
       id: '',
       categoryId: _eSelectedCategoryModel!.categoryId,
-      userId: '00000000-0000-0000-0000-000000000000', // Default empty GUID placeholder
+      userId: _authController.currentUserId.value.isNotEmpty 
+          ? _authController.currentUserId.value 
+          : '00000000-0000-0000-0000-000000000000',
       equipmentName: _eNameController.text.trim(),
       description: _eDescriptionController.text.trim(),
       price: _ePriceController.text.trim(),
