@@ -37,7 +37,15 @@ namespace CooRent.Api.Api.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-            var response = ApiResponse<string>.FailureResponse(exception.Message);
+            var message = exception.Message;
+            var inner = exception.InnerException;
+            while (inner != null)
+            {
+                message += " -> " + inner.Message;
+                inner = inner.InnerException;
+            }
+
+            var response = ApiResponse<string>.FailureResponse(message);
 
             var options = new JsonSerializerOptions
             {

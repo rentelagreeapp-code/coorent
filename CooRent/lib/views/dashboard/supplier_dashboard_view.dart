@@ -164,6 +164,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await loadAllData();
       await _mapController.loadRentals();
     } catch (e) {
+      print("hhh   kkkk dfdffd"+e.toString());
       Get.snackbar('Error', 'Failed to add rental item: $e',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
     } finally {
