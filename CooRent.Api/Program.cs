@@ -112,8 +112,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        // Delete and recreate database tables fresh
-        dbContext.Database.EnsureDeleted();
+        // Ensure database exists automatically without deleting existing data
         dbContext.Database.EnsureCreated();
     }
     catch (Exception ex)

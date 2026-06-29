@@ -20,4 +20,20 @@ class BookingRepository {
       throw Exception(e.response?.data['message'] ?? 'Failed to load services');
     }
   }
+
+  Future<List<RentalServiceModel>> getAllServices() async {
+    try {
+      print("aki11");
+      final response = await _apiClient.dio.get('/api/services');
+      if (response.data['success'] == true) {
+        final List list = response.data['data'] ?? [];
+        print("Sevice list ak123"+list.toString());
+        return list.map((item) => RentalServiceModel.fromJson(item)).toList();
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load services');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to load services');
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart' as fm;
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:coorent/controllers/auth_controller.dart';
 import 'package:coorent/controllers/dashboard_controller.dart';
 import 'package:coorent/controllers/map_controller.dart';
@@ -112,7 +113,7 @@ class DashboardView extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 12),
-                 SizedBox(
+                 Obx(() => SizedBox(
                   height: 95,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -120,55 +121,44 @@ class DashboardView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final service = _dashboardController.services[index];
                       return Container(
-                        width: 160,
+                        width: 90,
                         margin: const EdgeInsets.only(right: 12),
-                        child: Card(
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: () {
-                              Get.toNamed('/services', arguments: service.name);
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(service.imageUrl),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.55),
-                                    BlendMode.darken,
+                        child: InkWell(
+                          onTap: () {
+                            Get.toNamed('/services', arguments: service.name);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (service.imageUrl.isNotEmpty)
+                                SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: Image.network(
+                                    service.imageUrl,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => const SizedBox(),
                                   ),
                                 ),
+                              const SizedBox(height: 6),
+                              Text(
+                                service.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                               ),
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    service.icon,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    service.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: Colors.white,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                           ),
                         ),
                       );
                     },
                   ),
-                ),
+                )),
               ],
             ),
           ),
@@ -179,24 +169,93 @@ class DashboardView extends StatelessWidget {
           flex: 3,
           child: Stack(
             children: [
-              Obx(() => GoogleMap(
-                    onMapCreated: _mapController.onMapCreated,
-                    initialCameraPosition: CameraPosition(
-                      target: _mapController.initialPosition,
-                      zoom: 12.0,
+              Obx(() => fm.FlutterMap(
+                    mapController: _mapController.fmMapController,
+                    options: fm.MapOptions(
+                      initialCenter: _mapController.currentPosition.value,
+                      initialZoom: 12.0,
                     ),
-                    markers: _mapController.markers,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
-                    compassEnabled: true,
+                    children: [
+                      fm.TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.coorent.coorent',
+                      ),
+                      // User's location dot
+                      fm.MarkerLayer(
+                        markers: [
+                          fm.Marker(
+                            point: _mapController.currentPosition.value,
+                            width: 24,
+                            height: 24,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: Colors.indigo,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Clustered rental service markers
+                      MarkerClusterLayerWidget(
+                        options: MarkerClusterLayerOptions(
+                          maxClusterRadius: 45,
+                          size: const Size(40, 40),
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.all(50),
+                          markers: _mapController.mapMarkers.toList(),
+                          builder: (context, markers) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  )
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  markers.length.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   )),
               Positioned(
                 bottom: 16,
                 right: 16,
                 child: FloatingActionButton(
                   mini: true,
-                  onPressed: _mapController.recenterMap,
+                  onPressed: _mapController.determinePosition,
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   child: const Icon(Icons.my_location),

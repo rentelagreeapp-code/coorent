@@ -46,26 +46,30 @@ class _ServicesViewState extends State<ServicesView> {
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    Container(
-                      width: 85,
-                      height: 85,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
-                        image: item.imageUrl.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(item.imageUrl),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: item.imageUrl.isEmpty
-                          ? Icon(
-                              Icons.agriculture_rounded,
-                              size: 40,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
-                            )
-                          : null,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (item.imageUrl.isNotEmpty)
+                          SizedBox(
+                            width: 85,
+                            height: 85,
+                            child: Image.network(
+                              item.imageUrl,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                            ),
+                          ),
+                        const SizedBox(height: 6),
+                        Text(
+                          item.categoryName,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 16),
                     Expanded(
