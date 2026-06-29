@@ -23,6 +23,7 @@ namespace CooRent.Api.Infrastructure.Data
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasIndex(u => u.MobileNumber).IsUnique();
+                entity.Property(u => u.Id).HasColumnName("UserId");
             });
 
             modelBuilder.Entity<Otp>(entity =>

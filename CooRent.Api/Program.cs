@@ -128,6 +128,13 @@ using (var scope = app.Services.CreateScope())
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""CategoryId"" uuid;
                     UPDATE public.""RentalServices"" SET ""CategoryId"" = ""Id"" WHERE ""CategoryId"" IS NULL;
 
+                    DO $$ 
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Users' AND column_name='Id') THEN
+                        ALTER TABLE public.""Users"" RENAME COLUMN ""Id"" TO ""UserId"";
+                        END IF;
+                    END $$;
+
                     CREATE TABLE IF NOT EXISTS public.""Equipments"" (
                         ""Id"" uuid NOT NULL,
                         ""CategoryId"" uuid NOT NULL,
