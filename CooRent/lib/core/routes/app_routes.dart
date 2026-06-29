@@ -32,14 +32,17 @@ class AppRoutes {
     GetPage(
       name: '/dashboard',
       page: () => DashboardView(),
+      binding: AppBindings(),
     ),
     GetPage(
       name: '/services',
       page: () => const ServicesView(),
+      binding: AppBindings(),
     ),
     GetPage(
       name: '/supplier-dashboard',
       page: () => const SupplierDashboardView(),
+      binding: AppBindings(),
     ),
   ];
 }
