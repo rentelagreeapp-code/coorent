@@ -559,28 +559,32 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       body: TabBarView(
         controller: _tabController,
         children: [
-          // 1. Rental Services Tab
+          // 1. Rental Services Tab (Displays Supplier's Equipments from Equipments table)
           Obx(() {
-            if (isLoading.value && services.isEmpty) {
+            if (isLoading.value && equipments.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (services.isEmpty) {
-              return const Center(child: Text('No rental services added yet.'));
+            if (equipments.isEmpty) {
+              return const Center(child: Text('No rental items added yet.'));
             }
             return RefreshIndicator(
               onRefresh: loadAllData,
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: services.length,
+                itemCount: equipments.length,
                 itemBuilder: (context, index) {
-                  final item = services[index];
+                  final item = equipments[index];
+                  // Find corresponding master service category name by matching CategoryId
+                  final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
+                  final catName = master?.categoryName ?? 'Other';
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: ListTile(
-                      leading: Icon(Icons.inventory_2_outlined, color: Colors.indigo[400]),
-                      title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Category: ${item.categoryName}\n${item.description}'),
-                      trailing: Text(item.priceDetails, style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
+                      leading: Icon(Icons.agriculture_outlined, color: Colors.indigo[400]),
+                      title: Text(item.equipmentName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('Category: $catName\n${item.description}'),
+                      trailing: Text(item.price, style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
                     ),
                   );
                 },
