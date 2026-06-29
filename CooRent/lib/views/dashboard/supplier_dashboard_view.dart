@@ -160,7 +160,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       _sDescriptionController.clear();
       _sPriceController.clear();
       _sImageUrlController.clear();
-      _customCategoryController.clear();
 
       await loadAllData();
       await _mapController.loadRentals();
