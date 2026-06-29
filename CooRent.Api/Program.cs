@@ -114,10 +114,26 @@ using (var scope = app.Services.CreateScope())
     {
         // Ensure database exists automatically without deleting existing data
         dbContext.Database.EnsureCreated();
+
+        // Self-healing database migration: check and append new columns automatically
+        using (var conn = dbContext.Database.GetDbConnection())
+        {
+            conn.Open();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Latitude"" double precision;
+                    ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Longitude"" double precision;
+                    ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""IsDeleted"" boolean DEFAULT false;
+                ";
+                cmd.ExecuteNonQuery();
+            }
+        }
+        Console.WriteLine("Database columns ensured successfully.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error ensuring database creation: {ex.Message}");
+        Console.WriteLine($"Error running database migrations: {ex.Message}");
     }
 }
 

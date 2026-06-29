@@ -34,6 +34,7 @@ class BookingRepository {
         throw Exception(response.data['message'] ?? 'Failed to load services');
       }
     } on DioException catch (e) {
+      print(e);
       throw Exception(e.response?.data['message'] ?? 'Failed to load services');
     }
   }
