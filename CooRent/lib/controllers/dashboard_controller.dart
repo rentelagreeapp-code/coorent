@@ -34,20 +34,9 @@ class DashboardController extends GetxController {
     'labor': Colors.cyan,
   };
 
-  final List<ServiceItem> _fallbackServices = [
-    ServiceItem(name: 'Tractor Rental', icon: Icons.agriculture, color: Colors.blueAccent, imageUrl: 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png'),
-    ServiceItem(name: 'Harvester Rental', icon: Icons.brightness_auto, color: Colors.indigoAccent, imageUrl: 'https://pngimg.com/uploads/combine_harvester/combine_harvester_PNG37.png'),
-    ServiceItem(name: 'Equipment Rental', icon: Icons.build, color: Colors.purpleAccent, imageUrl: 'https://pngimg.com/uploads/plow/plow_PNG5.png'),
-    ServiceItem(name: 'Transport', icon: Icons.local_shipping, color: Colors.deepPurpleAccent, imageUrl: 'https://pngimg.com/uploads/tractor/tractor_PNG16281.png'),
-    ServiceItem(name: 'Seeds', icon: Icons.spa, color: Colors.amber, imageUrl: 'https://cdn-icons-png.flaticon.com/512/4115/4115160.png'),
-    ServiceItem(name: 'Labor', icon: Icons.people, color: Colors.cyan, imageUrl: 'https://cdn-icons-png.flaticon.com/512/1792/1792823.png'),
-  ];
-
   @override
   void onInit() {
     super.onInit();
-    // Start with fallback/default services
-    services.assignAll(_fallbackServices);
     fetchCategoriesFromApi();
   }
 
