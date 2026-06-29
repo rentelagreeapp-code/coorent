@@ -14,6 +14,7 @@ namespace CooRent.Api.Infrastructure.Data
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<RentalService> RentalServices => Set<RentalService>();
         public DbSet<Admin> Admins => Set<Admin>();
+        public DbSet<Equipment> Equipments => Set<Equipment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,12 @@ namespace CooRent.Api.Infrastructure.Data
             modelBuilder.Entity<RefreshToken>(entity =>
             {
                 entity.HasIndex(t => t.Token).IsUnique();
+            });
+
+            modelBuilder.Entity<Equipment>(entity =>
+            {
+                entity.Property(e => e.EquipmentImages)
+                    .HasColumnType("jsonb");
             });
         }
     }

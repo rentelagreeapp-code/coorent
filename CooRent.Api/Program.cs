@@ -125,11 +125,25 @@ using (var scope = app.Services.CreateScope())
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Latitude"" double precision;
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""Longitude"" double precision;
                     ALTER TABLE public.""RentalServices"" ADD COLUMN IF NOT EXISTS ""IsDeleted"" boolean DEFAULT false;
+
+                    CREATE TABLE IF NOT EXISTS public.""Equipments"" (
+                        ""Id"" uuid NOT NULL,
+                        ""CategoryId"" uuid NOT NULL,
+                        ""UserId"" uuid NOT NULL,
+                        ""EquipmentName"" character varying(200) NOT NULL,
+                        ""Description"" character varying(1000) NOT NULL,
+                        ""Price"" character varying(100) NOT NULL,
+                        ""Latitude"" double precision NOT NULL,
+                        ""Longitude"" double precision NOT NULL,
+                        ""EquipmentImages"" jsonb NOT NULL,
+                        ""CreatedDate"" timestamp with time zone NOT NULL,
+                        CONSTRAINT ""PK_Equipments"" PRIMARY KEY (""Id"")
+                    );
                 ";
                 cmd.ExecuteNonQuery();
             }
         }
-        Console.WriteLine("Database columns ensured successfully.");
+        Console.WriteLine("Database columns and Equipments table ensured successfully.");
     }
     catch (Exception ex)
     {
