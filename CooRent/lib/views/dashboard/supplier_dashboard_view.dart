@@ -113,9 +113,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   Future<void> _addService() async {
     if (!_serviceFormKey.currentState!.validate()) return;
 
-    final category = _isCustomCategory
-        ? _customCategoryController.text.trim()
-        : _selectedCategory ?? 'Other';
+    final category = _selectedCategory ?? 'Other';
 
     if (category.isEmpty) {
       Get.snackbar('Validation Error', 'Category cannot be empty',
@@ -135,11 +133,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
 
     // Link categoryId GUID dynamically from master category list
     String categoryGuid = '00000000-0000-0000-0000-000000000000';
-    if (!_isCustomCategory && _selectedCategory != null) {
-      final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
-      if (matched != null) {
-        categoryGuid = matched.categoryId;
-      }
+    final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
+    if (matched != null) {
+      categoryGuid = matched.categoryId;
     }
 
     final newEquipment = EquipmentModel(
@@ -160,7 +156,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     try {
       await _bookingRepository.createEquipment(newEquipment);
       Navigator.pop(context);
-      Get.snackbar('Success', 'Rental service record added to Equipments successfully!',
+      Get.snackbar('Success', 'Rental item added successfully!',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
       
       _sTitleController.clear();
@@ -172,8 +168,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await loadAllData();
       await _mapController.loadRentals();
     } catch (e) {
-      print("exexpetion"+e.toString());
-      Get.snackbar('Error', 'Failed to add service record: $e',
+      Get.snackbar('Error', 'Failed to add rental item: $e',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
     } finally {
       isLoading.value = false;
@@ -268,7 +263,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'Add Rental Service',
+                            'Add Rental Item',
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
                           ),
                           IconButton(
@@ -278,50 +273,25 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Text('New Category?', style: TextStyle(fontWeight: FontWeight.bold)),
-                          const Spacer(),
-                          Switch(
-                            value: _isCustomCategory,
-                            onChanged: (val) {
-                              setSheetState(() {
-                                _isCustomCategory = val;
-                              });
-                            },
+                      Obx(() {
+                        if (categories.isEmpty) return const Text('No categories loaded.');
+                        return DropdownButtonFormField<String>(
+                          value: _selectedCategory ?? categories.first,
+                          items: categories
+                              .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                              .toList(),
+                          onChanged: (val) {
+                            setSheetState(() {
+                              _selectedCategory = val;
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Select Category',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.category_rounded),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      _isCustomCategory
-                          ? TextFormField(
-                              controller: _customCategoryController,
-                              decoration: const InputDecoration(
-                                labelText: 'Category Name',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.category_outlined),
-                              ),
-                              validator: (val) => val == null || val.isEmpty ? 'Enter category' : null,
-                            )
-                          : Obx(() {
-                              if (categories.isEmpty) return const Text('No categories loaded.');
-                              return DropdownButtonFormField<String>(
-                                value: _selectedCategory ?? categories.first,
-                                items: categories
-                                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setSheetState(() {
-                                    _selectedCategory = val;
-                                  });
-                                },
-                                decoration: const InputDecoration(
-                                  labelText: 'Select Category',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.category_rounded),
-                                ),
-                              );
-                            }),
+                        );
+                      }),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _sTitleController,
@@ -388,7 +358,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text('Add Service Listing', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
