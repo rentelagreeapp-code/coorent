@@ -4,10 +4,12 @@ import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:coorent/core/storage/secure_storage_service.dart';
 
+import 'package:coorent/core/constants/api_constants.dart';
+
 class ApiClient {
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'https://coorent.onrender.com', // Render Cloud Hosted instance
+      baseUrl: ApiConstants.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       contentType: 'application/json',
