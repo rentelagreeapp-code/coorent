@@ -23,7 +23,57 @@ namespace CooRent.Api.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var services = await _context.Set<RentalService>().ToListAsync();
+            var services = await _context.Set<RentalService>()
+                .Where(s => !s.IsDeleted)
+                .ToListAsync();
+
+            // Auto-seed sample master data if database has no active services
+            if (!services.Any())
+            {
+                var seedData = new List<RentalService>
+                {
+                    new() {
+                        CategoryName = "Tractors",
+                        Title = "John Deere 5050D",
+                        Description = "Reliable 50 HP tractor suitable for plowing, tilling, and heavy haulage.",
+                        PriceDetails = "₹2,500 / Day",
+                        ImageUrl = "https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png",
+                        Latitude = 28.6139,
+                        Longitude = 77.2090
+                    },
+                    new() {
+                        CategoryName = "JCB",
+                        Title = "JCB 3DX Backhoe Loader",
+                        Description = "Heavy-duty backhoe loader ideal for farm excavation and land clearing.",
+                        PriceDetails = "₹8,000 / Day",
+                        ImageUrl = "https://pngimg.com/uploads/excavator/excavator_PNG16.png",
+                        Latitude = 28.6250,
+                        Longitude = 77.2150
+                    },
+                    new() {
+                        CategoryName = "Cars",
+                        Title = "Mahindra Bolero Camper (4x4)",
+                        Description = "Sturdy 4x4 pickup utility car, ideal for transporting farm produce.",
+                        PriceDetails = "₹3,500 / Day",
+                        ImageUrl = "https://pngimg.com/uploads/suv/suv_PNG101252.png",
+                        Latitude = 28.6050,
+                        Longitude = 77.2000
+                    },
+                    new() {
+                        CategoryName = "Drones",
+                        Title = "DJI Agras T40 Spraying Drone",
+                        Description = "Advanced agricultural drone featuring coaxial twin rotors and a 40 kg spraying payload.",
+                        PriceDetails = "₹9,500 / Day",
+                        ImageUrl = "https://pngimg.com/uploads/drone/drone_PNG9.png",
+                        Latitude = 28.6180,
+                        Longitude = 77.2250
+                    }
+                };
+                await _context.AddRangeAsync(seedData);
+                await _context.SaveChangesAsync();
+                services = seedData;
+            }
+
             return Ok(ApiResponse<List<RentalService>>.SuccessResponse(services, "All services retrieved successfully"));
         }
         [HttpGet("{categoryName}")]

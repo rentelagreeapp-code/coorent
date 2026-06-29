@@ -91,7 +91,9 @@ namespace CooRent.Api.Api.Controllers
         [HttpGet("services")]
         public async Task<IActionResult> GetAllServices()
         {
-            var services = await _context.Set<RentalService>().ToListAsync();
+            var services = await _context.Set<RentalService>()
+                .Where(s => !s.IsDeleted)
+                .ToListAsync();
             return Ok(ApiResponse<List<RentalService>>.SuccessResponse(services, "Services retrieved successfully"));
         }
 
@@ -102,7 +104,7 @@ namespace CooRent.Api.Api.Controllers
             var service = await _context.Set<RentalService>().FindAsync(id);
             if (service == null) return NotFound(ApiResponse<string>.FailureResponse("Service not found"));
 
-            _context.Set<RentalService>().Remove(service);
+            service.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return Ok(ApiResponse<string>.SuccessResponse("Service deleted successfully", "Catalog updated"));
