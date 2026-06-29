@@ -127,7 +127,7 @@ class DashboardView extends StatelessWidget {
                       },
                       icon: const Icon(Icons.business_center_rounded, size: 14),
                       label: const Text(
-                        'Supplier',
+                        'Switch as Suplier',
                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
