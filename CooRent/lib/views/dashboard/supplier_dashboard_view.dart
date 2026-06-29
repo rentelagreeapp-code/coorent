@@ -95,9 +95,15 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
         _eSelectedCategoryModel = serviceList.first;
       }
 
-      // 2. Fetch Equipments
-      final equipmentList = await _bookingRepository.getAllEquipments();
-      equipments.assignAll(equipmentList);
+      // 2. Fetch Equipments (Filtered by the stored UserId of the logged-in supplier)
+      final String userId = _authController.currentUserId.value;
+      if (userId.isNotEmpty) {
+        final equipmentList = await _bookingRepository.getEquipmentsByUserId(userId);
+        equipments.assignAll(equipmentList);
+      } else {
+        final equipmentList = await _bookingRepository.getAllEquipments();
+        equipments.assignAll(equipmentList);
+      }
 
     } catch (e) {
       Get.snackbar('Error', 'Failed to load master data: $e',

@@ -78,6 +78,20 @@ class BookingRepository {
     }
   }
 
+  Future<List<EquipmentModel>> getEquipmentsByUserId(String userId) async {
+    try {
+      final response = await _apiClient.dio.get('/api/equipments/user/$userId');
+      if (response.data['success'] == true) {
+        final List list = response.data['data'] ?? [];
+        return list.map((item) => EquipmentModel.fromJson(item)).toList();
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load user equipments');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to load user equipments');
+    }
+  }
+
   Future<EquipmentModel> createEquipment(EquipmentModel equipment) async {
     try {
       final response = await _apiClient.dio.post(

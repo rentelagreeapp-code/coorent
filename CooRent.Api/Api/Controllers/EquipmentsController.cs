@@ -27,6 +27,15 @@ namespace CooRent.Api.Api.Controllers
             return Ok(ApiResponse<List<Equipment>>.SuccessResponse(equipments, "Equipments retrieved successfully"));
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(Guid userId)
+        {
+            var equipments = await _context.Equipments
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+            return Ok(ApiResponse<List<Equipment>>.SuccessResponse(equipments, "User equipments retrieved successfully"));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Equipment equipment)
         {
