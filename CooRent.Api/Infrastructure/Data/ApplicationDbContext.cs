@@ -40,6 +40,7 @@ namespace CooRent.Api.Infrastructure.Data
             modelBuilder.Entity<Equipment>(entity =>
             {
                 entity.Property(e => e.EquipmentImages)
+                    .HasColumnType("jsonb")
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                         v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) ?? new List<string>()
