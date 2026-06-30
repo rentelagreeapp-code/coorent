@@ -18,7 +18,6 @@ class EquipmentDetailView extends StatefulWidget {
 }
 
 class _EquipmentDetailViewState extends State<EquipmentDetailView> {
-  int _currentImageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -30,73 +29,12 @@ class _EquipmentDetailViewState extends State<EquipmentDetailView> {
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // Collapsible Image Header
+          // Simple AppBar with Back button & title
           SliverAppBar(
-            expandedHeight: 300,
             pinned: true,
             backgroundColor: Colors.indigo[800],
             foregroundColor: Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (images.isNotEmpty)
-                    PageView.builder(
-                      itemCount: images.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentImageIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Image.network(
-                          images[index],
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    )
-                  else
-                    Container(
-                      color: Colors.indigo[50],
-                      child: Icon(Icons.agriculture_rounded, size: 80, color: Colors.indigo[200]),
-                    ),
-                  // Dark bottom gradient overlay for text readability
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                      ),
-                    ),
-                  ),
-                  // Page Indicator dots if there are multiple images
-                  if (images.length > 1)
-                    Positioned(
-                      bottom: 16,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          images.length,
-                          (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: index == _currentImageIndex
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.4),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            title: Text(widget.item.equipmentName),
           ),
           // Content
           SliverToBoxAdapter(
@@ -160,7 +98,50 @@ class _EquipmentDetailViewState extends State<EquipmentDetailView> {
                     widget.item.description.isNotEmpty ? widget.item.description : 'No description provided.',
                     style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 24),
+                  // Grid View of Photos
+                  if (images.isNotEmpty) ...[
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Equipment Photos',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.0,
+                      ),
+                      itemCount: images.length,
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[200]!),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Image.network(
+                              images[index],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.indigo[50],
+                                  child: Icon(Icons.broken_image_rounded, color: Colors.indigo[200]),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   // Verification & Date row
                   Container(
                     padding: const EdgeInsets.all(16),
