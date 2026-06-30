@@ -447,6 +447,46 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           ),
                         );
                       }),
+                      Obx(() {
+                        final suggestions = services.where((s) => s.categoryName == _selectedCategory).toList();
+                        if (suggestions.isEmpty) return const SizedBox();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Suggested Templates:',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black54),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 38,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: suggestions.length,
+                                itemBuilder: (context, index) {
+                                  final sug = suggestions[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: ActionChip(
+                                      label: Text(sug.title, style: const TextStyle(fontSize: 12)),
+                                      backgroundColor: Colors.indigo[50],
+                                      onPressed: () {
+                                        setSheetState(() {
+                                          _sTitleController.text = sug.title;
+                                          _sDescriptionController.text = sug.description;
+                                          _sPriceController.text = sug.priceDetails;
+                                        });
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        );
+                      }),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _sTitleController,
