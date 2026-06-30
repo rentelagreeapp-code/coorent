@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:coorent/controllers/map_controller.dart';
@@ -41,6 +45,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   final _eLatController = TextEditingController();
   final _eLngController = TextEditingController();
   RentalServiceModel? _eSelectedCategoryModel;
+
+  final ImagePicker _picker = ImagePicker();
+  final _pickedPhotos = <File>[].obs;
 
   var isLoading = false.obs;
   var services = <RentalServiceModel>[].obs;
@@ -113,6 +120,12 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   Future<void> _addService() async {
     if (!_serviceFormKey.currentState!.validate()) return;
 
+    if (_pickedPhotos.length < 2 || _pickedPhotos.length > 5) {
+      Get.snackbar('Validation Error', 'Please upload between 2 and 5 photos.',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
+      return;
+    }
+
     final category = _selectedCategory ?? 'Other';
 
     if (category.isEmpty) {
@@ -124,35 +137,80 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     final double lat = double.tryParse(_sLatController.text) ?? 0.0;
     final double lng = double.tryParse(_sLngController.text) ?? 0.0;
 
-    final List<String> images = [];
-    if (_sImageUrlController.text.trim().isNotEmpty) {
-      images.add(_sImageUrlController.text.trim());
-    } else {
-      images.add('https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png');
-    }
-
-    String categoryGuid = '00000000-0000-0000-0000-000000000000';
-    final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
-    if (matched != null) {
-      categoryGuid = matched.categoryId;
-    }
-
-    final newEquipment = EquipmentModel(
-      id: '',
-      categoryId: categoryGuid,
-      userId: _authController.currentUserId.value.isNotEmpty 
-          ? _authController.currentUserId.value 
-          : '00000000-0000-0000-0000-000000000000',
-      equipmentName: _sTitleController.text.trim(),
-      description: _sDescriptionController.text.trim(),
-      price: _sPriceController.text.trim(),
-      latitude: lat,
-      longitude: lng,
-      equipmentImages: images,
-    );
-
     isLoading.value = true;
     try {
+      final List<String> imageUrls = [];
+
+      for (int i = 0; i < _pickedPhotos.length; i++) {
+        final File file = _pickedPhotos[i];
+        final bytes = await file.readAsBytes();
+        
+        img.Image? decoded = img.decodeImage(bytes);
+        if (decoded == null) {
+          throw Exception('Failed to decode image $i');
+        }
+
+        int quality = 80;
+        List<int> compressed = img.encodeJpg(decoded, quality: quality);
+        
+        int width = decoded.width;
+        int height = decoded.height;
+
+        while (compressed.length > 102400 && quality > 10) {
+          quality -= 15;
+          if (width > 800) {
+            width = (width * 0.8).toInt();
+            height = (height * 0.8).toInt();
+            final resized = img.copyResize(decoded, width: width, height: height);
+            compressed = img.encodeJpg(resized, quality: quality);
+          } else {
+            compressed = img.encodeJpg(decoded, quality: quality);
+          }
+        }
+
+        final Uint8List uploadBytes = Uint8List.fromList(compressed);
+        final String fileName = 'equip_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        
+        final dio = Dio();
+        final uploadUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/coorent/$fileName';
+
+        final response = await dio.post(
+          uploadUrl,
+          data: Stream.fromIterable([uploadBytes]),
+          options: Options(
+            headers: {
+              'Content-Type': 'image/jpeg',
+            },
+          ),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          imageUrls.add('https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/$fileName');
+        } else {
+          throw Exception('Failed to upload image $i: status code ${response.statusCode}');
+        }
+      }
+
+      String categoryGuid = '00000000-0000-0000-0000-000000000000';
+      final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
+      if (matched != null) {
+        categoryGuid = matched.categoryId;
+      }
+
+      final newEquipment = EquipmentModel(
+        id: '',
+        categoryId: categoryGuid,
+        userId: _authController.currentUserId.value.isNotEmpty 
+            ? _authController.currentUserId.value 
+            : '00000000-0000-0000-0000-000000000000',
+        equipmentName: _sTitleController.text.trim(),
+        description: _sDescriptionController.text.trim(),
+        price: _sPriceController.text.trim(),
+        latitude: lat,
+        longitude: lng,
+        equipmentImages: imageUrls,
+      );
+
       await _bookingRepository.createEquipment(newEquipment);
       Navigator.pop(context);
       Get.snackbar('Success', 'Rental item added successfully!',
@@ -161,7 +219,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       _sTitleController.clear();
       _sDescriptionController.clear();
       _sPriceController.clear();
-      _sImageUrlController.clear();
+      _pickedPhotos.clear();
 
       await loadAllData();
       await _mapController.loadRentals();
@@ -399,14 +457,83 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         validator: (val) => val == null || val.isEmpty ? 'Enter price' : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _sImageUrlController,
-                        decoration: const InputDecoration(
-                          labelText: 'Image URL (Optional)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.image_outlined),
-                        ),
+                      const Text(
+                        'Upload Equipment Photos (Select 2 to 5 images)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
                       ),
+                      const SizedBox(height: 8),
+                      Obx(() {
+                        return SizedBox(
+                          height: 90,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _pickedPhotos.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == _pickedPhotos.length) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    if (_pickedPhotos.length >= 5) {
+                                      Get.snackbar('Limit Reached', 'You can upload maximum 5 photos',
+                                          snackPosition: SnackPosition.BOTTOM,
+                                          backgroundColor: Colors.orange,
+                                          colorText: Colors.white);
+                                      return;
+                                    }
+                                    final XFile? file = await _picker.pickImage(
+                                      source: ImageSource.gallery,
+                                    );
+                                    if (file != null) {
+                                      _pickedPhotos.add(File(file.path));
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 80,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey[300]!),
+                                    ),
+                                    child: const Icon(Icons.add_a_photo_outlined, size: 28, color: Colors.indigo),
+                                  ),
+                                );
+                              }
+
+                              final File imageFile = _pickedPhotos[index];
+                              return Stack(
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    margin: const EdgeInsets.only(right: 8, top: 4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      image: DecorationImage(
+                                        image: FileImage(imageFile),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 2,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        _pickedPhotos.removeAt(index);
+                                      },
+                                      child: const CircleAvatar(
+                                        radius: 10,
+                                        backgroundColor: Colors.red,
+                                        child: Icon(Icons.close, size: 12, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        );
+                      }),
                       const SizedBox(height: 16),
                       Row(
                         children: [
