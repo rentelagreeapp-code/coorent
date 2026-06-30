@@ -1169,84 +1169,52 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                 ),
               ),
             ),
-            // Sliver persistent tab header
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: Colors.indigo[900],
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: Colors.indigo,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  tabs: const [
-                    Tab(icon: Icon(Icons.list_alt_rounded), text: 'Active Services'),
-                    Tab(icon: Icon(Icons.grid_view_rounded), text: 'Detail Items'),
-                  ],
-                ),
-              ),
-            ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            // Tab 1: Active Services (Supplier's Equipments list)
-            Obx(() {
-              if (isLoading.value && equipments.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (equipments.isEmpty) {
-                return _buildEmptyState('Add YOUR first rental item', showButton: true);
-              }
-              return RefreshIndicator(
-                onRefresh: loadAllData,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: equipments.length,
-                  itemBuilder: (context, index) {
-                    final item = equipments[index];
-                    final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
-                    final catName = master?.categoryName ?? 'Other';
-
-                    return _buildServiceCard(item, catName, master?.imageUrl);
-                  },
+        body: Obx(() {
+          if (isLoading.value && equipments.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (equipments.isEmpty) {
+            return _buildEmptyState('Add YOUR first rental item', showButton: true);
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                child: Text(
+                  'Our Rental Items',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
                 ),
-              );
-            }),
-
-            // Tab 2: Detailed Equipments grid-style list
-            Obx(() {
-              if (isLoading.value && equipments.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (equipments.isEmpty) {
-                return _buildEmptyState('Add YOUR first rental item', showButton: true);
-              }
-              return RefreshIndicator(
-                onRefresh: loadAllData,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: equipments.length,
-                  itemBuilder: (context, index) {
-                    final item = equipments[index];
-                    return _buildDetailCard(item);
-                  },
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: loadAllData,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.78,
+                    ),
+                    itemCount: equipments.length,
+                    itemBuilder: (context, index) {
+                      final item = equipments[index];
+                      final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
+                      final catName = master?.categoryName ?? 'Other';
+                      return _buildGridCard(item, catName, master?.imageUrl);
+                    },
+                  ),
                 ),
-              );
-            }),
-          ],
-        ),
+              ),
+            ],
+          );
+        }),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (_tabController.index == 0) {
-            _showAddServiceSheet();
-          } else {
-            _showAddEquipmentSheet();
-          }
-        },
+        onPressed: _showAddServiceSheet,
         backgroundColor: Colors.indigo[700],
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
@@ -1309,6 +1277,87 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
        ),
      );
    }
+
+  Widget _buildGridCard(EquipmentModel item, String catName, String? catImageUrl) {
+    final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : catImageUrl;
+
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image top header
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                image: imgUrl != null && imgUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(imgUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: Colors.grey[100],
+              ),
+              child: imgUrl == null || imgUrl.isEmpty
+                  ? Center(child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]))
+                  : null,
+            ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.equipmentName,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  catName,
+                  style: TextStyle(fontSize: 10, color: Colors.indigo[700], fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.price,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 10, color: Colors.orangeAccent),
+                        const SizedBox(width: 1),
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 45),
+                          child: Text(
+                            item.locationName.isNotEmpty ? item.locationName : 'Unknown',
+                            style: TextStyle(fontSize: 9, color: Colors.grey[500]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildServiceCard(EquipmentModel item, String catName, String? catImageUrl) {
     return Card(
