@@ -866,17 +866,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                         _mapController.currentCity.value,
                                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
                                       )),
-                                      const SizedBox(height: 2),
-                                      Obx(() {
-                                        final double lat = _mapController.currentPosition.value.latitude;
-                                        final double lng = _mapController.currentPosition.value.longitude;
-                                        return Text(
-                                          'Coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
-                                          style: TextStyle(color: Colors.indigo[50], fontSize: 11),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        );
-                                      }),
                                     ],
                                   ),
                                 ),
@@ -1155,7 +1144,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           Text(
                             item.locationName.isNotEmpty
                                 ? item.locationName
-                                : '${item.latitude.toStringAsFixed(2)}, ${item.longitude.toStringAsFixed(2)}',
+                                : 'Unknown Location',
                             style: TextStyle(fontSize: 10, color: Colors.grey[500]),
                           ),
                         ],
