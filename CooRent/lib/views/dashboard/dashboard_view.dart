@@ -31,10 +31,10 @@ class DashboardView extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () => _dashboardController.changeTab(2), // Move to Notifications
+            onPressed: () => Get.to(() => const NotificationsView()), // Navigate to dedicated Notifications screen
           ),
           Obx(() => GestureDetector(
-                onTap: () => _dashboardController.changeTab(3), // Move to Profile
+                onTap: () => _dashboardController.changeTab(2), // Move to Profile
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: CircleAvatar(
@@ -59,8 +59,6 @@ class DashboardView extends StatelessWidget {
           case 1:
             return const BookingsTab();
           case 2:
-            return const NotificationsTab();
-          case 3:
             return const ProfileTab();
           default:
             return _buildHomeTab(context);
@@ -79,11 +77,6 @@ class DashboardView extends StatelessWidget {
                 icon: Icon(Icons.bookmark_outline),
                 selectedIcon: Icon(Icons.bookmark),
                 label: 'My Bookings',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.notifications_none_rounded),
-                selectedIcon: Icon(Icons.notifications_rounded),
-                label: 'Alerts',
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline),
@@ -513,6 +506,20 @@ class _ProfileTabState extends State<ProfileTab> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class NotificationsView extends StatelessWidget {
+  const NotificationsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Alerts & Notifications'),
+      ),
+      body: const NotificationsTab(),
     );
   }
 }
