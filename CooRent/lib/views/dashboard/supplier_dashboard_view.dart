@@ -942,7 +942,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                     final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
                     final catName = master?.categoryName ?? 'Other';
 
-                    return _buildServiceCard(item, catName);
+                    return _buildServiceCard(item, catName, master?.imageUrl);
                   },
                 ),
               );
@@ -1017,7 +1017,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     );
   }
 
-  Widget _buildServiceCard(EquipmentModel item, String catName) {
+  Widget _buildServiceCard(EquipmentModel item, String catName, String? catImageUrl) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
@@ -1027,12 +1027,30 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 color: Colors.indigo[50],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.agriculture_rounded, size: 30, color: Colors.indigo[700]),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: catImageUrl != null && catImageUrl.isNotEmpty
+                    ? Image.network(
+                        catImageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.agriculture_rounded,
+                          size: 30,
+                          color: Colors.indigo[700],
+                        ),
+                      )
+                    : Icon(
+                        Icons.agriculture_rounded,
+                        size: 30,
+                        color: Colors.indigo[700],
+                      ),
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
