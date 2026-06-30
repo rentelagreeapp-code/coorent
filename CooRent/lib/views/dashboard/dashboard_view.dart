@@ -14,6 +14,7 @@ class DashboardView extends StatelessWidget {
   final DashboardController _dashboardController = Get.find<DashboardController>();
   final MapController _mapController = Get.find<MapController>();
   final AuthController _authController = Get.find<AuthController>();
+  final TextEditingController _searchFieldController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -346,9 +347,12 @@ class DashboardView extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
+                            controller: _searchFieldController,
                             textInputAction: TextInputAction.search,
+                            onChanged: _mapController.fetchSuggestions,
                             onSubmitted: (val) {
                               _mapController.searchPlace(val);
+                              _mapController.suggestions.clear();
                             },
                             decoration: InputDecoration(
                               hintText: 'Search by place / city...',
@@ -358,11 +362,13 @@ class DashboardView extends StatelessWidget {
                           ),
                         ),
                         Obx(() {
-                          if (_mapController.searchQuery.value.isNotEmpty) {
+                          if (_mapController.searchQuery.value.isNotEmpty || _searchFieldController.text.isNotEmpty) {
                             return IconButton(
                               icon: const Icon(Icons.clear, color: Colors.grey),
                               onPressed: () {
+                                _searchFieldController.clear();
                                 _mapController.clearSearch();
+                                _mapController.suggestions.clear();
                               },
                             );
                           }
@@ -373,6 +379,46 @@ class DashboardView extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Autocomplete suggestions popup overlay
+              Obx(() {
+                if (_mapController.suggestions.isEmpty) return const SizedBox();
+                return Positioned(
+                  top: 72,
+                  left: 16,
+                  right: 16,
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _mapController.suggestions.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final suggestion = _mapController.suggestions[index];
+                          return ListTile(
+                            leading: const Icon(Icons.location_on_outlined, color: Colors.indigo, size: 18),
+                            title: Text(
+                              suggestion,
+                              style: const TextStyle(fontSize: 13),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              _searchFieldController.text = suggestion;
+                              _mapController.searchPlace(suggestion);
+                              _mapController.suggestions.clear();
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              }),
 
               // Selected Marker Details Popup Card Overlay
               Obx(() {

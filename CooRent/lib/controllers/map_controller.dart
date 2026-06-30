@@ -35,6 +35,8 @@ class MapController extends GetxController {
   var highlightedEquipmentId = ''.obs;
   var selectedEquipment = Rxn<EquipmentModel>();
   var mapRotation = 0.0.obs;
+  var suggestions = <String>[].obs;
+  var isSearchingSuggestions = false.obs;
 
   @override
   void onInit() {
@@ -143,6 +145,39 @@ class MapController extends GetxController {
       debugPrint('Error searching location: $e');
     } finally {
       isLoadingRentals.value = false;
+    }
+  }
+
+  Future<void> fetchSuggestions(String query) async {
+    if (query.trim().length < 3) {
+      suggestions.clear();
+      return;
+    }
+    isSearchingSuggestions.value = true;
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/search',
+        queryParameters: {
+          'q': query,
+          'format': 'json',
+          'limit': 5,
+          'addressdetails': 1,
+        },
+        options: Options(headers: {'User-Agent': 'CooRentApp/1.0.0'}),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final List list = response.data;
+        final List<String> items = list
+            .map((item) => item['display_name'] as String? ?? '')
+            .where((val) => val.isNotEmpty)
+            .toList();
+        suggestions.assignAll(items);
+      }
+    } catch (e) {
+      debugPrint('Error fetching suggestions: $e');
+    } finally {
+      isSearchingSuggestions.value = false;
     }
   }
 
