@@ -182,7 +182,7 @@ class _EquipmentDetailViewState extends State<EquipmentDetailView> {
         backgroundColor: Colors.grey[50],
         body: CustomScrollView(
           slivers: [
-            // Simple AppBar with Back button & title & Edit/Delete actions
+            // Simple AppBar with Back button & title
             SliverAppBar(
               pinned: true,
               backgroundColor: Colors.indigo[800],
@@ -192,18 +192,6 @@ class _EquipmentDetailViewState extends State<EquipmentDetailView> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context, _hasChanges),
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit_rounded, color: Colors.white),
-                  onPressed: () => _showEditDialog(context),
-                  tooltip: 'Edit Item',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
-                  onPressed: () => _confirmDelete(context),
-                  tooltip: 'Delete Item',
-                ),
-              ],
             ),
             // Content
             SliverToBoxAdapter(
@@ -357,6 +345,56 @@ class _EquipmentDetailViewState extends State<EquipmentDetailView> {
               ),
             ),
           ],
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey[200]!)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
+                )
+              ],
+            ),
+            child: Row(
+              children: [
+                // Edit Button
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showEditDialog(context),
+                    icon: const Icon(Icons.edit_rounded),
+                    label: const Text('Edit Listing', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Delete Button
+                ElevatedButton(
+                  onPressed: () => _confirmDelete(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[50],
+                    foregroundColor: Colors.redAccent,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.red[200]!),
+                    ),
+                  ),
+                  child: const Icon(Icons.delete_outline_rounded),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
