@@ -10,6 +10,8 @@ import 'package:coorent/models/rental_service_model.dart';
 import 'package:coorent/models/equipment_model.dart';
 import 'package:coorent/repositories/booking_repository.dart';
 import 'package:coorent/controllers/auth_controller.dart';
+import 'package:flutter_map/flutter_map.dart' as fm;
+import 'package:latlong2/latlong.dart';
 
 class SupplierDashboardView extends StatefulWidget {
   const SupplierDashboardView({super.key});
@@ -22,6 +24,14 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   final BookingRepository _bookingRepository = Get.find<BookingRepository>();
   final MapController _mapController = Get.find<MapController>();
   final AuthController _authController = Get.find<AuthController>();
+
+  double? _customServiceLat;
+  double? _customServiceLng;
+  final _customServiceCity = ''.obs;
+
+  double? _customEquipmentLat;
+  double? _customEquipmentLng;
+  final _customEquipmentCity = ''.obs;
 
   late TabController _tabController;
 
@@ -135,8 +145,8 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       return;
     }
     print("hit 3");
-    final double lat = double.tryParse(_sLatController.text) ?? 0.0;
-    final double lng = double.tryParse(_sLngController.text) ?? 0.0;
+    final double lat = _customServiceLat ?? _mapController.currentPosition.value.latitude;
+    final double lng = _customServiceLng ?? _mapController.currentPosition.value.longitude;
 
     isLoading.value = true;
     try {
@@ -212,6 +222,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
         latitude: lat,
         longitude: lng,
         equipmentImages: imageUrls,
+        locationName: _customServiceCity.value,
       );
 
       await _bookingRepository.createEquipment(newEquipment);
@@ -248,8 +259,8 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       return;
     }
 
-    final double lat = double.tryParse(_eLatController.text) ?? 0.0;
-    final double lng = double.tryParse(_eLngController.text) ?? 0.0;
+    final double lat = _customEquipmentLat ?? _mapController.currentPosition.value.latitude;
+    final double lng = _customEquipmentLng ?? _mapController.currentPosition.value.longitude;
 
     final List<String> images = _eImagesController.text
         .split(',')
@@ -273,6 +284,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       latitude: lat,
       longitude: lng,
       equipmentImages: images,
+      locationName: _customEquipmentCity.value,
     );
 
     isLoading.value = true;
@@ -297,8 +309,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   }
 
   void _showAddServiceSheet() {
-    _sLatController.text = _mapController.currentPosition.value.latitude.toString();
-    _sLngController.text = _mapController.currentPosition.value.longitude.toString();
+    _customServiceLat = _mapController.currentPosition.value.latitude;
+    _customServiceLng = _mapController.currentPosition.value.longitude;
+    _customServiceCity.value = _mapController.currentCity.value;
 
     final initialIdx = services.indexWhere((s) => s.categoryName == _selectedCategory);
     final pageController = PageController(
@@ -544,23 +557,34 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         );
                       }),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _sLatController,
-                              decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
-                            ),
+                      Obx(() => TextFormField(
+                        key: ValueKey(_customServiceCity.value),
+                        initialValue: _customServiceCity.value,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: 'Detected City',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.location_city_rounded),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.map_rounded, color: Colors.indigo),
+                            onPressed: () {
+                              _selectLocationOnMap(
+                                context: context,
+                                initialLat: _customServiceLat ?? _mapController.currentPosition.value.latitude,
+                                initialLng: _customServiceLng ?? _mapController.currentPosition.value.longitude,
+                                onLocationSelected: (lat, lng) async {
+                                  _customServiceLat = lat;
+                                  _customServiceLng = lng;
+                                  _customServiceCity.value = 'Loading location...';
+                                  final city = await _mapController.getCityNameFromCoords(lat, lng);
+                                  _customServiceCity.value = city;
+                                  setSheetState(() {});
+                                },
+                              );
+                            },
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _sLngController,
-                              decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      )),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: _addService,
@@ -584,8 +608,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   }
 
   void _showAddEquipmentSheet() {
-    _eLatController.text = _mapController.currentPosition.value.latitude.toString();
-    _eLngController.text = _mapController.currentPosition.value.longitude.toString();
+    _customEquipmentLat = _mapController.currentPosition.value.latitude;
+    _customEquipmentLng = _mapController.currentPosition.value.longitude;
+    _customEquipmentCity.value = _mapController.currentCity.value;
 
     showModalBottomSheet(
       context: context,
@@ -690,23 +715,34 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _eLatController,
-                              decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
-                            ),
+                      Obx(() => TextFormField(
+                        key: ValueKey(_customEquipmentCity.value),
+                        initialValue: _customEquipmentCity.value,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: 'Location (Detected City)',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.location_city_rounded),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.map_rounded, color: Colors.indigo),
+                            onPressed: () {
+                              _selectLocationOnMap(
+                                context: context,
+                                initialLat: _customEquipmentLat ?? _mapController.currentPosition.value.latitude,
+                                initialLng: _customEquipmentLng ?? _mapController.currentPosition.value.longitude,
+                                onLocationSelected: (lat, lng) async {
+                                  _customEquipmentLat = lat;
+                                  _customEquipmentLng = lng;
+                                  _customEquipmentCity.value = 'Loading location...';
+                                  final city = await _mapController.getCityNameFromCoords(lat, lng);
+                                  _customEquipmentCity.value = city;
+                                  setSheetState(() {});
+                                },
+                              );
+                            },
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _eLngController,
-                              decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      )),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: _addEquipment,
@@ -834,8 +870,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                       Obx(() {
                                         final double lat = _mapController.currentPosition.value.latitude;
                                         final double lng = _mapController.currentPosition.value.longitude;
+                                        final String city = _mapController.currentCity.value;
                                         return Text(
-                                          'AgriHub Center, coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
+                                          '$city Hub, coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
                                           style: TextStyle(color: Colors.indigo[50], fontSize: 11),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -1096,7 +1133,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           const Icon(Icons.location_on, size: 12, color: Colors.orangeAccent),
                           const SizedBox(width: 2),
                           Text(
-                            '${item.latitude.toStringAsFixed(2)}, ${item.longitude.toStringAsFixed(2)}',
+                            item.locationName.isNotEmpty
+                                ? item.locationName
+                                : '${item.latitude.toStringAsFixed(2)}, ${item.longitude.toStringAsFixed(2)}',
                             style: TextStyle(fontSize: 10, color: Colors.grey[500]),
                           ),
                         ],
@@ -1109,6 +1148,141 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
           ),
         ],
       ),
+    );
+  }
+
+  void _selectLocationOnMap({
+    required BuildContext context,
+    required double initialLat,
+    required double initialLng,
+    required Function(double lat, double lng) onLocationSelected,
+  }) {
+    double tempLat = initialLat;
+    double tempLng = initialLng;
+    final fm.MapController mapController = fm.MapController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: SizedBox(
+                height: 450,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.map_rounded, color: Colors.indigo),
+                              SizedBox(width: 8),
+                              Text(
+                                'Tap to Select Location',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          fm.FlutterMap(
+                            mapController: mapController,
+                            options: fm.MapOptions(
+                              initialCenter: LatLng(tempLat, tempLng),
+                              initialZoom: 14.0,
+                              onTap: (tapPosition, point) {
+                                setState(() {
+                                  tempLat = point.latitude;
+                                  tempLng = point.longitude;
+                                });
+                              },
+                            ),
+                            children: [
+                              fm.TileLayer(
+                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.coorent.coorent',
+                              ),
+                              fm.MarkerLayer(
+                                markers: [
+                                  fm.Marker(
+                                    point: LatLng(tempLat, tempLng),
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: FloatingActionButton(
+                              mini: true,
+                              onPressed: () {
+                                mapController.move(
+                                  LatLng(_mapController.currentPosition.value.latitude, _mapController.currentPosition.value.longitude),
+                                  14.0,
+                                );
+                                setState(() {
+                                  tempLat = _mapController.currentPosition.value.latitude;
+                                  tempLng = _mapController.currentPosition.value.longitude;
+                                });
+                              },
+                              backgroundColor: Colors.white,
+                              child: const Icon(Icons.my_location, color: Colors.indigo),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              onLocationSelected(tempLat, tempLng);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Confirm Location'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -7,6 +7,7 @@ class EquipmentModel {
   final String price;
   final double latitude;
   final double longitude;
+  final String locationName;
   final List<String> equipmentImages;
 
   EquipmentModel({
@@ -19,6 +20,7 @@ class EquipmentModel {
     required this.latitude,
     required this.longitude,
     required this.equipmentImages,
+    required this.locationName,
   });
 
   factory EquipmentModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class EquipmentModel {
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       equipmentImages: List<String>.from(json['equipmentImages'] ?? []),
+      locationName: json['locationName'] ?? '',
     );
   }
 
@@ -46,6 +49,7 @@ class EquipmentModel {
       'latitude': latitude,
       'longitude': longitude,
       'equipmentImages': equipmentImages,
+      'locationName': locationName,
     };
   }
 }

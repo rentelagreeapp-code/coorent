@@ -30,6 +30,9 @@ namespace CooRent.Api.Core.Entities
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
+        [MaxLength(200)]
+        public string LocationName { get; set; } = string.Empty;
+
         // Equipment Images stored as list of URL strings
         public List<string> EquipmentImages { get; set; } = new();
 

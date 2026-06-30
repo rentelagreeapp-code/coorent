@@ -146,8 +146,10 @@ using (var scope = app.Services.CreateScope())
                         ""Longitude"" double precision NOT NULL,
                         ""EquipmentImages"" jsonb NOT NULL,
                         ""CreatedDate"" timestamp with time zone NOT NULL,
+                        ""LocationName"" character varying(200) DEFAULT '',
                         CONSTRAINT ""PK_Equipments"" PRIMARY KEY (""Id"")
                     );
+                    ALTER TABLE public.""Equipments"" ADD COLUMN IF NOT EXISTS ""LocationName"" character varying(200) DEFAULT '';
                 ";
                 cmd.ExecuteNonQuery();
             }

@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart' as fm;
 import 'package:latlong2/latlong.dart';
 
 import 'package:geolocator/geolocator.dart';
+import 'package:dio/dio.dart';
 import 'package:coorent/repositories/booking_repository.dart';
 import 'package:coorent/models/rental_service_model.dart';
 
@@ -15,6 +16,7 @@ class MapController extends GetxController {
   final LatLng initialPosition = const LatLng(28.6139, 77.2090);
   
   var currentPosition = const LatLng(28.6139, 77.2090).obs;
+  var currentCity = 'New Delhi'.obs;
   var isLoadingRentals = false.obs;
   
   // Real active rentals loaded from API
@@ -27,6 +29,76 @@ class MapController extends GetxController {
   void onInit() {
     super.onInit();
     determinePosition();
+  }
+
+  Future<void> fetchCityName(double lat, double lng) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        queryParameters: {
+          'format': 'json',
+          'lat': lat,
+          'lon': lng,
+          'zoom': 10,
+          'addressdetails': 1,
+        },
+        options: Options(
+          headers: {
+            'User-Agent': 'CooRentApp/1.0.0',
+          },
+        ),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final address = response.data['address'];
+        if (address != null) {
+          final city = address['city'] ??
+              address['town'] ??
+              address['village'] ??
+              address['suburb'] ??
+              address['county'] ??
+              'Unknown City';
+          currentCity.value = city;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching city name: $e');
+    }
+  }
+
+  Future<String> getCityNameFromCoords(double lat, double lng) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        queryParameters: {
+          'format': 'json',
+          'lat': lat,
+          'lon': lng,
+          'zoom': 10,
+          'addressdetails': 1,
+        },
+        options: Options(
+          headers: {
+            'User-Agent': 'CooRentApp/1.0.0',
+          },
+        ),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final address = response.data['address'];
+        if (address != null) {
+          return address['city'] ??
+              address['town'] ??
+              address['village'] ??
+              address['suburb'] ??
+              address['county'] ??
+              'Unknown City';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting city name from coords: $e');
+    }
+    return 'Selected Location';
   }
 
   Future<void> determinePosition() async {
@@ -61,6 +133,9 @@ class MapController extends GetxController {
       
       // Move map view to the user's location
       fmMapController.move(currentPosition.value, 13.5);
+      
+      // Resolve city name asynchronously
+      fetchCityName(position.latitude, position.longitude);
       
       // Load nearby rentals from API
       loadRentals();
