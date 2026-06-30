@@ -21,6 +21,21 @@ class SupplierDashboardView extends StatefulWidget {
 }
 
 class _SupplierDashboardViewState extends State<SupplierDashboardView> with SingleTickerProviderStateMixin {
+  var suggestions = <RentalServiceModel>[].obs;
+  var isLoadingSuggestions = false.obs;
+
+  Future<void> fetchSuggestions(String categoryName) async {
+    isLoadingSuggestions.value = true;
+    try {
+      final list = await _bookingRepository.getServicesByCategory(categoryName);
+      suggestions.assignAll(list);
+    } catch (e) {
+      print('Error fetching suggestions: $e');
+    } finally {
+      isLoadingSuggestions.value = false;
+    }
+  }
+
   final BookingRepository _bookingRepository = Get.find<BookingRepository>();
   final MapController _mapController = Get.find<MapController>();
   final AuthController _authController = Get.find<AuthController>();
@@ -333,6 +348,11 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       _selectedCategory = services[initialIdx >= 0 ? initialIdx : 0].categoryName;
     }
 
+    // Fetch initial suggestions from DB for the selected category
+    if (_selectedCategory != null) {
+      fetchSuggestions(_selectedCategory!);
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -418,6 +438,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                 setSheetState(() {
                                   _selectedCategory = services[index].categoryName;
                                 });
+                                fetchSuggestions(_selectedCategory!);
                               },
                               itemCount: services.length,
                               itemBuilder: (context, index) {
@@ -436,6 +457,10 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                         duration: const Duration(milliseconds: 350),
                                         curve: Curves.easeInOut,
                                       );
+                                      setSheetState(() {
+                                        _selectedCategory = services[index].categoryName;
+                                      });
+                                      fetchSuggestions(_selectedCategory!);
                                     },
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -516,10 +541,21 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ),
                       ],
 
-                      // STEP 2: EQUIPMENT DETAILS & DESCRIPTION WITH SUGGESTIONS
+                      // STEP 2: EQUIPMENT DETAILS & DESCRIPTION WITH SUGGESTIONS FROM DATABASE
                       if (_currentServiceStep == 2) ...[
                         Obx(() {
-                          final suggestions = services.where((s) => s.categoryName == _selectedCategory).toList();
+                          if (isLoadingSuggestions.value) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12.0),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.indigo),
+                                ),
+                              ),
+                            );
+                          }
                           if (suggestions.isEmpty) return const SizedBox();
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
