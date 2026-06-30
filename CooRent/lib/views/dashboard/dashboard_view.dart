@@ -430,8 +430,8 @@ class DashboardView extends StatelessWidget {
 
               // Collapsible List of Available Equipments (Draggable Scroll Sheet)
               DraggableScrollableSheet(
-                initialChildSize: 0.1,
-                minChildSize: 0.08,
+                initialChildSize: 0.15,
+                minChildSize: 0.12,
                 maxChildSize: 0.5,
                 builder: (context, scrollController) {
                   return Container(
