@@ -5,6 +5,9 @@ import 'package:coorent/models/equipment_model.dart';
 
 class BookingRepository {
   final ApiClient _apiClient;
+  
+  // Local cache memory store for rental services/categories
+  List<RentalServiceModel> _cachedServices = [];
 
   BookingRepository(this._apiClient);
 
@@ -22,15 +25,17 @@ class BookingRepository {
     }
   }
 
-  Future<List<RentalServiceModel>> getAllServices() async {
+  Future<List<RentalServiceModel>> getAllServices({bool forceRefresh = false}) async {
+    if (_cachedServices.isNotEmpty && !forceRefresh) {
+      return _cachedServices;
+    }
     try {
-      print("aki1167567");
       final response = await _apiClient.dio.get('/api/services');
 
       if (response.data['success'] == true) {
         final List list = response.data['data'] ?? [];
-
-        return list.map((item) => RentalServiceModel.fromJson(item)).toList();
+        _cachedServices = list.map((item) => RentalServiceModel.fromJson(item)).toList();
+        return _cachedServices;
       } else {
         throw Exception(response.data['message'] ?? 'Failed to load services');
       }
@@ -38,6 +43,10 @@ class BookingRepository {
       print(e);
       throw Exception(e.response?.data['message'] ?? 'Failed to load services');
     }
+  }
+
+  void clearServicesCache() {
+    _cachedServices.clear();
   }
 
   Future<RentalServiceModel> createService(RentalServiceModel service) async {
