@@ -120,13 +120,13 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
 
   Future<void> _addService() async {
     if (!_serviceFormKey.currentState!.validate()) return;
-
+  print("hit 1");
     if (_pickedPhotos.length < 2 || _pickedPhotos.length > 5) {
       Get.snackbar('Validation Error', 'Please upload between 2 and 5 photos.',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
-
+    print("hit 2");
     final category = _selectedCategory ?? 'Other';
 
     if (category.isEmpty) {
@@ -134,7 +134,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
-
+    print("hit 3");
     final double lat = double.tryParse(_sLatController.text) ?? 0.0;
     final double lng = double.tryParse(_sLngController.text) ?? 0.0;
 
@@ -168,16 +168,16 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
             compressed = img.encodeJpg(decoded, quality: quality);
           }
         }
-
+        print("hit 4");
         final Uint8List uploadBytes = Uint8List.fromList(compressed);
         final String fileName = 'equip_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
-        
+        print("hit 5");
         final dio = Dio();
         final uploadUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/coorent/$fileName';
-
+        print("hit 6");
         final response = await dio.post(
           uploadUrl,
-          data: Stream.fromIterable([uploadBytes]),
+          data: uploadBytes,
           options: Options(
             headers: {
               'Content-Type': 'image/jpeg',
@@ -225,7 +225,13 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await loadAllData();
       await _mapController.loadRentals();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add rental item: $e',
+      String errMsg = e.toString();
+      if (e is DioException) {
+        final resData = e.response?.data;
+        print('DioException response: $resData');
+        errMsg = 'Server returned error: ${e.response?.statusCode} - $resData';
+      }
+      Get.snackbar('Error', 'Failed to add rental item: $errMsg',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.redAccent, colorText: Colors.white);
     } finally {
       isLoading.value = false;

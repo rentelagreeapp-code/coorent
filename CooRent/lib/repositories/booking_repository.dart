@@ -113,6 +113,7 @@ class BookingRepository {
         throw Exception(response.data['message'] ?? 'Failed to create equipment');
       }
     } on DioException catch (e) {
+      print("esdfd vfdr e"+e.toString());
       throw Exception(e.response?.data['message'] ?? 'Failed to create equipment');
     }
   }
