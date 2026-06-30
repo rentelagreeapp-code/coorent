@@ -233,7 +233,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     _sLatController.text = _mapController.currentPosition.value.latitude.toString();
     _sLngController.text = _mapController.currentPosition.value.longitude.toString();
 
-    final initialIdx = categories.indexOf(_selectedCategory ?? categories.first);
+    final initialIdx = services.indexWhere((s) => s.categoryName == _selectedCategory);
     final pageController = PageController(
       initialPage: initialIdx >= 0 ? initialIdx : 0,
       viewportFraction: 0.35,
@@ -283,32 +283,22 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                       ),
                       const SizedBox(height: 12),
                       Obx(() {
-                        if (categories.isEmpty) return const Center(child: Text('No categories loaded.'));
+                        if (services.isEmpty) return const Center(child: Text('No categories loaded.'));
                         return SizedBox(
                           height: 130,
                           child: PageView.builder(
                             controller: pageController,
                             onPageChanged: (index) {
                               setSheetState(() {
-                                _selectedCategory = categories[index];
+                                _selectedCategory = services[index].categoryName;
                               });
                             },
-                            itemCount: categories.length,
+                            itemCount: services.length,
                             itemBuilder: (context, index) {
-                              final cat = categories[index];
+                              final serviceItem = services[index];
+                              final cat = serviceItem.categoryName;
+                              final imgUrl = serviceItem.imageUrl;
                               final isSelected = cat == _selectedCategory;
-
-                              // Map category names to illustrative network image URLs
-                              String imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png';
-                              if (cat.toLowerCase().contains('tractor')) {
-                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png';
-                              } else if (cat.toLowerCase().contains('jcb')) {
-                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_5rrtf25rrtf25rrt-removebg-preview.png';
-                              } else if (cat.toLowerCase().contains('car')) {
-                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_5pxb2o5pxb2o5pxb-removebg-preview.png';
-                              } else if (cat.toLowerCase().contains('drone')) {
-                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_6hszwz6hszwz6hsz-removebg-preview.png';
-                              }
 
                               return AnimatedScale(
                                 scale: isSelected ? 1.18 : 0.82,
