@@ -11,6 +11,7 @@ class EquipmentModel {
   final double longitude;
   final String locationName;
   final List<String> equipmentImages;
+  final String ownerName;
 
   EquipmentModel({
     required this.id,
@@ -23,6 +24,7 @@ class EquipmentModel {
     required this.longitude,
     required this.equipmentImages,
     required this.locationName,
+    this.ownerName = 'Farmer Provider',
   });
 
   factory EquipmentModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +58,7 @@ class EquipmentModel {
       longitude: (json['longitude'] ?? json['Longitude'] as num?)?.toDouble() ?? 0.0,
       equipmentImages: parsedImages,
       locationName: json['locationName']?.toString() ?? json['LocationName']?.toString() ?? '',
+      ownerName: json['ownerName']?.toString() ?? json['OwnerName']?.toString() ?? 'Farmer Provider',
     );
   }
 
@@ -71,6 +74,7 @@ class EquipmentModel {
       'longitude': longitude,
       'equipmentImages': equipmentImages,
       'locationName': locationName,
+      'ownerName': ownerName,
     };
   }
 }

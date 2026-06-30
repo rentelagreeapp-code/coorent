@@ -21,9 +21,34 @@ namespace CooRent.Api.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] Guid? categoryId = null, [FromQuery] string? locationName = null)
         {
-            var equipments = await _context.Equipments.ToListAsync();
+            var query = _context.Equipments.AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(e => e.CategoryId == categoryId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(locationName))
+            {
+                query = query.Where(e => e.LocationName.ToLower().Contains(locationName.ToLower()));
+            }
+
+            var equipments = await query.ToListAsync();
+            var userNames = await _context.Users.ToDictionaryAsync(u => u.Id, u => u.Name);
+            foreach (var eq in equipments)
+            {
+                if (userNames.TryGetValue(eq.UserId, out var name))
+                {
+                    eq.OwnerName = name;
+                }
+                else
+                {
+                    eq.OwnerName = "Farmer Provider";
+                }
+            }
+
             return Ok(ApiResponse<List<Equipment>>.SuccessResponse(equipments, "Equipments retrieved successfully"));
         }
 
@@ -33,6 +58,20 @@ namespace CooRent.Api.Api.Controllers
             var equipments = await _context.Equipments
                 .Where(e => e.UserId == userId)
                 .ToListAsync();
+
+            var userNames = await _context.Users.ToDictionaryAsync(u => u.Id, u => u.Name);
+            foreach (var eq in equipments)
+            {
+                if (userNames.TryGetValue(eq.UserId, out var name))
+                {
+                    eq.OwnerName = name;
+                }
+                else
+                {
+                    eq.OwnerName = "Farmer Provider";
+                }
+            }
+
             return Ok(ApiResponse<List<Equipment>>.SuccessResponse(equipments, "User equipments retrieved successfully"));
         }
 

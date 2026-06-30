@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CooRent.Api.Core.Entities
 {
@@ -35,6 +36,9 @@ namespace CooRent.Api.Core.Entities
 
         // Equipment Images stored as list of URL strings
         public List<string> EquipmentImages { get; set; } = new();
+
+        [NotMapped]
+        public string OwnerName { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }

@@ -6,6 +6,7 @@ import 'package:coorent/controllers/auth_controller.dart';
 import 'package:coorent/controllers/dashboard_controller.dart';
 import 'package:coorent/controllers/map_controller.dart';
 import 'package:coorent/controllers/profile_controller.dart';
+import 'package:coorent/views/dashboard/equipment_detail_view.dart';
 
 class DashboardView extends StatelessWidget {
   DashboardView({super.key});
@@ -91,109 +92,120 @@ class DashboardView extends StatelessWidget {
   Widget _buildHomeTab(BuildContext context) {
     return Column(
       children: [
-        // Top Half - Service Grid (25% height)
-        Expanded(
-          flex: 1,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Rental Services',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Get.toNamed('/supplier-dashboard');
-                      },
-                      icon: const Icon(Icons.business_center_rounded, size: 14),
-                      label: const Text(
-                        'Switch as Suplier',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                 Obx(() => SizedBox(
-                  height: 95,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _dashboardController.services.length,
-                    itemBuilder: (context, index) {
-                      final service = _dashboardController.services[index];
-                      return Container(
-                        width: 90,
-                        margin: const EdgeInsets.only(right: 12),
-                        child: InkWell(
-                          onTap: () {
-                            Get.toNamed('/services', arguments: service.name);
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (service.imageUrl.isNotEmpty)
-                                SizedBox(
-                                  width: 60,
-                                  height: 60,
-                                  child: Image.network(
-                                    service.imageUrl,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                                  ),
-                                ),
-                              const SizedBox(height: 6),
-                              Text(
-                                service.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                  color: Colors.black87,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+        // Top Part - Rental Services Categories
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Rental Services',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
                   ),
-                )),
-              ],
-            ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Get.toNamed('/supplier-dashboard');
+                    },
+                    icon: const Icon(Icons.business_center_rounded, size: 14),
+                    label: const Text(
+                      'Switch as Supplier',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Obx(() => SizedBox(
+                    height: 95,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _dashboardController.services.length,
+                      itemBuilder: (context, index) {
+                        final service = _dashboardController.services[index];
+                        final isSelected = _mapController.selectedCategory.value.toLowerCase() == service.name.toLowerCase();
+
+                        return Container(
+                          width: 90,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.indigo[50] : Colors.transparent,
+                            border: Border.all(
+                              color: isSelected ? Colors.indigo : Colors.transparent,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              _mapController.toggleCategory(service.name);
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (service.imageUrl.isNotEmpty)
+                                  SizedBox(
+                                    width: 60,
+                                    height: 60,
+                                    child: Image.network(
+                                      service.imageUrl,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                                    ),
+                                  ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  service.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                    color: isSelected ? Colors.indigo[900] : Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )),
+            ],
           ),
         ),
         
-        // Bottom Half - Google Maps (75% height)
+        // Bottom Part - Map view, Place search, drag sheet list, details popup
         Expanded(
           flex: 3,
           child: Stack(
             children: [
+              // Interactive FlutterMap
               Obx(() => fm.FlutterMap(
                     mapController: _mapController.fmMapController,
                     options: fm.MapOptions(
                       initialCenter: _mapController.currentPosition.value,
                       initialZoom: 12.0,
+                      onPositionChanged: (position, hasGesture) {
+                        _mapController.updateVisibleEquipments(position.bounds);
+                      },
                     ),
                     children: [
                       fm.TileLayer(
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'com.coorent.coorent',
                       ),
-                      // User's location dot
+                      // User Current Location Dot
                       fm.MarkerLayer(
                         markers: [
                           fm.Marker(
@@ -206,25 +218,25 @@ class DashboardView extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
-                                child: Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: Colors.indigo,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 4,
-                                        offset: Offset(0, 2),
-                                      )
-                                    ],
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: Colors.indigo,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.white, width: 2),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       // Clustered rental service markers
@@ -263,12 +275,277 @@ class DashboardView extends StatelessWidget {
                       ),
                     ],
                   )),
+
+              // Place search card input floating on Map
               Positioned(
-                bottom: 16,
+                top: 16,
+                left: 16,
+                right: 16,
+                child: Card(
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Colors.indigo),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (val) {
+                              _mapController.searchPlace(val);
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Search by place / city...',
+                              hintStyle: TextStyle(color: Colors.grey[500], fontSize: 13),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        Obx(() {
+                          if (_mapController.searchQuery.value.isNotEmpty) {
+                            return IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey),
+                              onPressed: () {
+                                _mapController.clearSearch();
+                              },
+                            );
+                          }
+                          return const SizedBox();
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Selected Marker Details Popup Card Overlay
+              Obx(() {
+                final selected = _mapController.selectedEquipment.value;
+                if (selected == null) return const SizedBox();
+                
+                final dist = _mapController.calculateDistance(selected.latitude, selected.longitude);
+                final imgUrl = selected.equipmentImages.isNotEmpty ? selected.equipmentImages.first : '';
+
+                return Positioned(
+                  bottom: 76,
+                  left: 16,
+                  right: 16,
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: InkWell(
+                      onTap: () {
+                        final matched = _dashboardController.services.firstWhereOrNull((s) => s.name.toLowerCase() == selected.ownerName.toLowerCase());
+                        Get.to(() => EquipmentDetailView(
+                              item: selected,
+                              categoryName: widgetNameForCategory(selected.categoryId),
+                              categoryImageUrl: matched?.imageUrl,
+                            ));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 70,
+                                height: 70,
+                                color: Colors.grey[100],
+                                child: imgUrl.isNotEmpty
+                                    ? Image.network(imgUrl, fit: BoxFit.cover)
+                                    : const Icon(Icons.agriculture_rounded, size: 30, color: Colors.indigo),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          selected.equipmentName,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close_rounded, size: 18),
+                                        onPressed: () {
+                                          _mapController.selectedEquipment.value = null;
+                                          _mapController.highlightedEquipmentId.value = '';
+                                        },
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Provider: ${selected.ownerName}',
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    selected.price,
+                                    style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.location_on_outlined, size: 10, color: Colors.orange),
+                                      const SizedBox(width: 2),
+                                      Expanded(
+                                        child: Text(
+                                          selected.locationName.isNotEmpty ? selected.locationName : 'Unknown',
+                                          style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${dist.toStringAsFixed(1)} km',
+                                        style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 10),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+
+              // Collapsible List of Available Equipments (Draggable Scroll Sheet)
+              DraggableScrollableSheet(
+                initialChildSize: 0.1,
+                minChildSize: 0.08,
+                maxChildSize: 0.5,
+                builder: (context, scrollController) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2.5),
+                          ),
+                        ),
+                        Obx(() => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Available Listings (${_mapController.visibleEquipments.length})',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.indigo),
+                              ),
+                              const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.grey, size: 20),
+                            ],
+                          ),
+                        )),
+                        const Divider(),
+                        Expanded(
+                          child: Obx(() {
+                            final list = _mapController.visibleEquipments;
+                            if (list.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No listings in this area.',
+                                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                                ),
+                              );
+                            }
+                            return ListView.builder(
+                              controller: scrollController,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: list.length,
+                              itemBuilder: (context, index) {
+                                final item = list[index];
+                                final isHighlighted = _mapController.highlightedEquipmentId.value == item.id;
+                                final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : '';
+
+                                return Card(
+                                  elevation: isHighlighted ? 4 : 1,
+                                  color: isHighlighted ? Colors.indigo[50] : Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: isHighlighted ? Colors.indigo : Colors.transparent,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(8),
+                                    leading: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        width: 50,
+                                        height: 50,
+                                        color: Colors.grey[100],
+                                        child: imgUrl.isNotEmpty
+                                            ? Image.network(imgUrl, fit: BoxFit.cover)
+                                            : const Icon(Icons.agriculture, color: Colors.indigo),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      item.equipmentName,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                    ),
+                                    subtitle: Text(
+                                      item.price,
+                                      style: const TextStyle(color: Colors.indigo, fontSize: 11, fontWeight: FontWeight.w600),
+                                    ),
+                                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                                    onTap: () {
+                                      _mapController.selectEquipment(item);
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              
+              // Recenter location button
+              Positioned(
+                bottom: 86,
                 right: 16,
                 child: FloatingActionButton(
                   mini: true,
-                  onPressed: _mapController.determinePosition,
+                  onPressed: _mapController.recenterMap,
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   child: const Icon(Icons.my_location),
@@ -279,6 +556,11 @@ class DashboardView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String widgetNameForCategory(String categoryId) {
+    // Helper to resolve category title by categoryId
+    return 'Equipment';
   }
 }
 

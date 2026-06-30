@@ -73,9 +73,15 @@ class BookingRepository {
     }
   }
 
-  Future<List<EquipmentModel>> getAllEquipments() async {
+  Future<List<EquipmentModel>> getAllEquipments({String? categoryId, String? locationName}) async {
     try {
-      final response = await _apiClient.dio.get('/api/equipments');
+      final response = await _apiClient.dio.get(
+        '/api/equipments',
+        queryParameters: {
+          if (categoryId != null && categoryId.isNotEmpty) 'categoryId': categoryId,
+          if (locationName != null && locationName.isNotEmpty) 'locationName': locationName,
+        },
+      );
       if (response.data['success'] == true) {
         final List list = response.data['data'] ?? [];
         return list.map((item) => EquipmentModel.fromJson(item)).toList();

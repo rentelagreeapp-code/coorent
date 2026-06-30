@@ -2,103 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart' as fm;
 import 'package:latlong2/latlong.dart';
-
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:coorent/repositories/booking_repository.dart';
+import 'package:coorent/models/equipment_model.dart';
 import 'package:coorent/models/rental_service_model.dart';
 
 class MapController extends GetxController {
   final fm.MapController fmMapController = fm.MapController();
   final BookingRepository _bookingRepository = Get.find<BookingRepository>();
 
-  // Default coordinate set (e.g. New Delhi, India)
   final LatLng initialPosition = const LatLng(28.6139, 77.2090);
   
   var currentPosition = const LatLng(28.6139, 77.2090).obs;
   var currentCity = 'New Delhi'.obs;
   var isLoadingRentals = false.obs;
   
-  // Real active rentals loaded from API
-  var rentalItems = <RentalServiceModel>[].obs;
+  // Loaded equipments list from DB
+  var rentalItems = <EquipmentModel>[].obs;
   
-  // Flutter map markers derived from rental items
+  // Only equipments visible in map viewport bounds
+  var visibleEquipments = <EquipmentModel>[].obs;
+  
+  // Custom marker instances
   var mapMarkers = <fm.Marker>[].obs;
+
+  // Selected filters
+  var selectedCategory = ''.obs;
+  var searchQuery = ''.obs;
+
+  // Selection & Highlight synchronization
+  var highlightedEquipmentId = ''.obs;
+  var selectedEquipment = Rxn<EquipmentModel>();
 
   @override
   void onInit() {
     super.onInit();
     determinePosition();
-  }
-
-  Future<void> fetchCityName(double lat, double lng) async {
-    try {
-      final dio = Dio();
-      final response = await dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'format': 'json',
-          'lat': lat,
-          'lon': lng,
-          'zoom': 10,
-          'addressdetails': 1,
-        },
-        options: Options(
-          headers: {
-            'User-Agent': 'CooRentApp/1.0.0',
-          },
-        ),
-      );
-      if (response.statusCode == 200 && response.data != null) {
-        final address = response.data['address'];
-        if (address != null) {
-          final city = address['city'] ??
-              address['town'] ??
-              address['village'] ??
-              address['suburb'] ??
-              address['county'] ??
-              'Unknown City';
-          currentCity.value = city;
-        }
-      }
-    } catch (e) {
-      debugPrint('Error fetching city name: $e');
-    }
-  }
-
-  Future<String> getCityNameFromCoords(double lat, double lng) async {
-    try {
-      final dio = Dio();
-      final response = await dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'format': 'json',
-          'lat': lat,
-          'lon': lng,
-          'zoom': 10,
-          'addressdetails': 1,
-        },
-        options: Options(
-          headers: {
-            'User-Agent': 'CooRentApp/1.0.0',
-          },
-        ),
-      );
-      if (response.statusCode == 200 && response.data != null) {
-        final address = response.data['address'];
-        if (address != null) {
-          return address['city'] ??
-              address['town'] ??
-              address['village'] ??
-              address['suburb'] ??
-              address['county'] ??
-              'Unknown City';
-        }
-      }
-    } catch (e) {
-      debugPrint('Error getting city name from coords: $e');
-    }
-    return 'Selected Location';
   }
 
   Future<void> determinePosition() async {
@@ -130,139 +70,265 @@ class MapController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
       currentPosition.value = LatLng(position.latitude, position.longitude);
-      
-      // Move map view to the user's location
       fmMapController.move(currentPosition.value, 13.5);
-      
-      // Resolve city name asynchronously
       fetchCityName(position.latitude, position.longitude);
-      
-      // Load nearby rentals from API
       loadRentals();
     } catch (e) {
       loadRentals();
     }
   }
 
-  Future<void> loadRentals() async {
+  Future<void> fetchCityName(double lat, double lng) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        queryParameters: {
+          'format': 'json',
+          'lat': lat,
+          'lon': lng,
+          'zoom': 10,
+          'addressdetails': 1,
+        },
+        options: Options(headers: {'User-Agent': 'CooRentApp/1.0.0'}),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final address = response.data['address'];
+        if (address != null) {
+          currentCity.value = address['city'] ??
+              address['town'] ??
+              address['village'] ??
+              address['suburb'] ??
+              address['county'] ??
+              'Unknown City';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error resolving city: $e');
+    }
+  }
+
+  Future<void> searchPlace(String query) async {
+    if (query.trim().isEmpty) return;
     isLoadingRentals.value = true;
     try {
-      final List<RentalServiceModel> allRentals = await _bookingRepository.getAllServices();
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/search',
+        queryParameters: {
+          'q': query,
+          'format': 'json',
+          'limit': 1,
+        },
+        options: Options(headers: {'User-Agent': 'CooRentApp/1.0.0'}),
+      );
+      if (response.statusCode == 200 && response.data != null && (response.data as List).isNotEmpty) {
+        final first = response.data[0];
+        final lat = double.parse(first['lat']);
+        final lon = double.parse(first['lon']);
+        final LatLng target = LatLng(lat, lon);
+        
+        currentPosition.value = target;
+        currentCity.value = query;
+        searchQuery.value = query;
+        fmMapController.move(target, 13.0);
+        
+        await loadRentals(locationName: query);
+      } else {
+        Get.snackbar('Location Search', 'Place not found.',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orangeAccent);
+      }
+    } catch (e) {
+      debugPrint('Error searching location: $e');
+    } finally {
+      isLoadingRentals.value = false;
+    }
+  }
+
+  Future<void> loadRentals({String? categoryName, String? locationName}) async {
+    isLoadingRentals.value = true;
+    try {
+      String? categoryGuid;
       
+      // Resolve categoryGuid if filtering by categoryName
+      final filterCat = categoryName ?? selectedCategory.value;
+      if (filterCat.isNotEmpty) {
+        final List<RentalServiceModel> masterServices = await _bookingRepository.getAllServices();
+        final matched = masterServices.firstWhereOrNull((s) => s.categoryName.toLowerCase() == filterCat.toLowerCase());
+        if (matched != null) {
+          categoryGuid = matched.categoryId;
+        }
+      }
+
+      final filterLoc = locationName ?? searchQuery.value;
+      final List<EquipmentModel> allEquipments = await _bookingRepository.getAllEquipments(
+        categoryId: categoryGuid,
+        locationName: filterLoc,
+      );
+
       final List<fm.Marker> markersList = [];
-      final List<RentalServiceModel> populatedRentals = [];
 
-      for (int i = 0; i < allRentals.length; i++) {
-        final item = allRentals[i];
+      for (int i = 0; i < allEquipments.length; i++) {
+        final item = allEquipments[i];
         
-        // If DB has no coordinates, assign sample nearby locations around currentPosition
-        double lat = item.latitude ?? (currentPosition.value.latitude + (0.01 * (i % 3 - 1)) + (0.005 * (i % 2)));
-        double lng = item.longitude ?? (currentPosition.value.longitude + (0.015 * (i % 2 - 1)) + (0.007 * (i % 3)));
-        
-        final rentalWithCoords = RentalServiceModel(
-          id: item.id,
-          categoryName: item.categoryName,
-          title: item.title,
-          description: item.description,
-          priceDetails: item.priceDetails,
-          imageUrl: item.imageUrl,
-          latitude: lat,
-          longitude: lng,
-        );
-        populatedRentals.add(rentalWithCoords);
-
-        // Build a beautiful custom pin widget
         markersList.add(
           fm.Marker(
-            point: LatLng(lat, lng),
-            width: 80,
-            height: 80,
+            point: LatLng(item.latitude, item.longitude),
+            width: 90,
+            height: 90,
             child: GestureDetector(
               onTap: () {
-                // Open the existing details screen
-                Get.toNamed('/equipment-details', arguments: item.id);
+                selectedEquipment.value = item;
+                highlightedEquipmentId.value = item.id;
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Price Tag Bubble
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        )
-                      ],
-                    ),
-                    child: Text(
-                      item.priceDetails.split(' ')[0], // Display short price (e.g. ₹2500)
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+              child: Obx(() {
+                final isHighlighted = highlightedEquipmentId.value == item.id;
+                final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : '';
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Price tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isHighlighted ? Colors.orangeAccent : Colors.indigo,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+                        ],
+                      ),
+                      child: Text(
+                        item.price.split(' ')[0],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  // Avatar/Image Pin
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.indigo, width: 2.5),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: item.imageUrl.isNotEmpty
-                          ? Image.network(
-                              item.imageUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
+                    const SizedBox(height: 2),
+                    // Image pin container
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: isHighlighted ? 52 : 44,
+                      height: isHighlighted ? 52 : 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isHighlighted ? Colors.orangeAccent : Colors.indigo,
+                          width: isHighlighted ? 3.5 : 2.5,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3))
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: imgUrl.isNotEmpty
+                            ? Image.network(
+                                imgUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                  Icons.agriculture,
+                                  color: Colors.indigo,
+                                  size: 20,
+                                ),
+                              )
+                            : const Icon(
                                 Icons.agriculture,
                                 color: Colors.indigo,
                                 size: 20,
                               ),
-                            )
-                          : const Icon(
-                              Icons.agriculture,
-                              color: Colors.indigo,
-                              size: 20,
-                            ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              }),
             ),
           ),
         );
       }
 
-      rentalItems.assignAll(populatedRentals);
+      rentalItems.assignAll(allEquipments);
       mapMarkers.assignAll(markersList);
+      updateVisibleEquipments(fmMapController.camera.visibleBounds);
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load nearby rental items: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[50],
-        colorText: Colors.red[900],
-      );
+      debugPrint('Error loading rentals: $e');
     } finally {
       isLoadingRentals.value = false;
     }
+  }
+
+  Future<String> getCityNameFromCoords(double lat, double lng) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        queryParameters: {
+          'format': 'json',
+          'lat': lat,
+          'lon': lng,
+          'zoom': 10,
+          'addressdetails': 1,
+        },
+        options: Options(headers: {'User-Agent': 'CooRentApp/1.0.0'}),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final address = response.data['address'];
+        if (address != null) {
+          return address['city'] ??
+              address['town'] ??
+              address['village'] ??
+              address['suburb'] ??
+              address['county'] ??
+              'Unknown City';
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting city name from coords: $e');
+    }
+    return 'Selected Location';
+  }
+
+  void updateVisibleEquipments(fm.LatLngBounds? bounds) {
+    if (bounds == null) {
+      visibleEquipments.assignAll(rentalItems);
+      return;
+    }
+    final filtered = rentalItems.where((eq) {
+      return bounds.contains(LatLng(eq.latitude, eq.longitude));
+    }).toList();
+    visibleEquipments.assignAll(filtered);
+  }
+
+  double calculateDistance(double lat, double lng) {
+    return Geolocator.distanceBetween(
+          currentPosition.value.latitude,
+          currentPosition.value.longitude,
+          lat,
+          lng,
+        ) / 1000;
+  }
+
+  void selectEquipment(EquipmentModel item) {
+    selectedEquipment.value = item;
+    highlightedEquipmentId.value = item.id;
+    fmMapController.move(LatLng(item.latitude, item.longitude), 13.5);
+  }
+
+  void toggleCategory(String category) {
+    if (selectedCategory.value == category) {
+      selectedCategory.value = '';
+    } else {
+      selectedCategory.value = category;
+    }
+    loadRentals();
+  }
+
+  void clearSearch() {
+    searchQuery.value = '';
+    loadRentals();
   }
 
   void recenterMap() {
