@@ -423,7 +423,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                       // STEP 1: CHOOSE RENTAL ITEM (Category)
                       if (_currentServiceStep == 1) ...[
                         const Text(
-                          'Select Category (Swipe to Choose Center Item)',
+                          'Choose rental item',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
                           textAlign: TextAlign.center,
                         ),
