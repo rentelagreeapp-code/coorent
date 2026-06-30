@@ -1153,7 +1153,12 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Obx(() => _buildStatItem('Total Rental Items', '${equipments.length}')),
+                              Obx(() {
+                                if (equipments.isEmpty) {
+                                  return const SizedBox();
+                                }
+                                return _buildStatItem('Total Rental Items', '${equipments.length}');
+                              }),
                               _buildStatItem('Verification', 'Verified', icon: Icons.verified_user_outlined, color: Colors.greenAccent),
                             ],
                           ),
@@ -1193,7 +1198,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                 return const Center(child: CircularProgressIndicator());
               }
               if (equipments.isEmpty) {
-                return _buildEmptyState('No active items listed. Tap + to begin.');
+                return _buildEmptyState('Add YOUR first rental item', showButton: true);
               }
               return RefreshIndicator(
                 onRefresh: loadAllData,
@@ -1217,7 +1222,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                 return const Center(child: CircularProgressIndicator());
               }
               if (equipments.isEmpty) {
-                return _buildEmptyState('No detailed equipment items registered.');
+                return _buildEmptyState('Add YOUR first rental item', showButton: true);
               }
               return RefreshIndicator(
                 onRefresh: loadAllData,
@@ -1271,18 +1276,39 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     );
   }
 
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.layers_clear_rounded, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(message, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-        ],
-      ),
-    );
-  }
+  Widget _buildEmptyState(String message, {bool showButton = false}) {
+     return Center(
+       child: Padding(
+         padding: const EdgeInsets.all(24.0),
+         child: Column(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [
+             Icon(Icons.layers_clear_rounded, size: 64, color: Colors.grey[400]),
+             const SizedBox(height: 16),
+             Text(
+               message,
+               style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.bold),
+               textAlign: TextAlign.center,
+             ),
+             if (showButton) ...[
+               const SizedBox(height: 24),
+               ElevatedButton.icon(
+                 onPressed: _showAddServiceSheet,
+                 icon: const Icon(Icons.add_rounded),
+                 label: const Text('Add YOUR first rental item', style: TextStyle(fontWeight: FontWeight.bold)),
+                 style: ElevatedButton.styleFrom(
+                   backgroundColor: Colors.indigo,
+                   foregroundColor: Colors.white,
+                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                 ),
+               ),
+             ],
+           ],
+         ),
+       ),
+     );
+   }
 
   Widget _buildServiceCard(EquipmentModel item, String catName, String? catImageUrl) {
     return Card(
