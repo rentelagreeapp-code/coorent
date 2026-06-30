@@ -329,7 +329,7 @@ class DashboardView extends StatelessWidget {
                 final imgUrl = selected.equipmentImages.isNotEmpty ? selected.equipmentImages.first : '';
 
                 return Positioned(
-                  bottom: 76,
+                  bottom: 16,
                   left: 16,
                   right: 16,
                   child: Card(
@@ -428,129 +428,21 @@ class DashboardView extends StatelessWidget {
                 );
               }),
 
-              // Collapsible List of Available Equipments (Draggable Scroll Sheet)
-              DraggableScrollableSheet(
-                initialChildSize: 0.15,
-                minChildSize: 0.12,
-                maxChildSize: 0.5,
-                builder: (context, scrollController) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 5,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2.5),
-                          ),
-                        ),
-                        Obx(() => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Available Listings (${_mapController.visibleEquipments.length})',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.indigo),
-                              ),
-                              const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.grey, size: 20),
-                            ],
-                          ),
-                        )),
-                        const Divider(),
-                        Expanded(
-                          child: Obx(() {
-                            final list = _mapController.visibleEquipments;
-                            if (list.isEmpty) {
-                              return const Center(
-                                child: Text(
-                                  'No listings in this area.',
-                                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                                ),
-                              );
-                            }
-                            return ListView.builder(
-                              controller: scrollController,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: list.length,
-                              itemBuilder: (context, index) {
-                                final item = list[index];
-                                final isHighlighted = _mapController.highlightedEquipmentId.value == item.id;
-                                final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : '';
-
-                                return Card(
-                                  elevation: isHighlighted ? 4 : 1,
-                                  color: isHighlighted ? Colors.indigo[50] : Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(
-                                      color: isHighlighted ? Colors.indigo : Colors.transparent,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.all(8),
-                                    leading: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Container(
-                                        width: 50,
-                                        height: 50,
-                                        color: Colors.grey[100],
-                                        child: imgUrl.isNotEmpty
-                                            ? Image.network(imgUrl, fit: BoxFit.cover)
-                                            : const Icon(Icons.agriculture, color: Colors.indigo),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      item.equipmentName,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                    subtitle: Text(
-                                      item.price,
-                                      style: const TextStyle(color: Colors.indigo, fontSize: 11, fontWeight: FontWeight.w600),
-                                    ),
-                                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
-                                    onTap: () {
-                                      _mapController.selectEquipment(item);
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              
               // Recenter location button
-              Positioned(
-                bottom: 86,
-                right: 16,
-                child: FloatingActionButton(
-                  mini: true,
-                  onPressed: _mapController.recenterMap,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                  child: const Icon(Icons.my_location),
-                ),
-              ),
+              Obx(() {
+                final selected = _mapController.selectedEquipment.value;
+                return Positioned(
+                  bottom: selected != null ? 130 : 16,
+                  right: 16,
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: _mapController.recenterMap,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                    child: const Icon(Icons.my_location),
+                  ),
+                );
+              }),
             ],
           ),
         ),
