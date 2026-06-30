@@ -156,7 +156,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await _bookingRepository.createEquipment(newEquipment);
       Navigator.pop(context);
       Get.snackbar('Success', 'Rental item added successfully!',
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.indigo, colorText: Colors.white);
       
       _sTitleController.clear();
       _sDescriptionController.clear();
@@ -213,7 +213,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       await _bookingRepository.createEquipment(newEquipment);
       Navigator.pop(context);
       Get.snackbar('Success', 'Equipment listing added successfully!',
-          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.indigo, colorText: Colors.white);
 
       _eNameController.clear();
       _eDescriptionController.clear();
@@ -261,7 +261,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         children: [
                           const Text(
                             'Add Rental Item',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -351,7 +351,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                       ElevatedButton(
                         onPressed: _addService,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
+                          backgroundColor: Colors.indigo,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -401,7 +401,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         children: [
                           const Text(
                             'Add Detailed Equipment',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -497,7 +497,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                       ElevatedButton(
                         onPressed: _addEquipment,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
+                          backgroundColor: Colors.indigo,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -526,7 +526,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
               expandedHeight: 280,
               floating: false,
               pinned: true,
-              backgroundColor: Colors.teal[800],
+              backgroundColor: Colors.indigo[800],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
@@ -535,7 +535,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.teal[900]!, Colors.teal[600]!],
+                          colors: [Colors.indigo[900]!, Colors.indigo[600]!],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -564,10 +564,10 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                             children: [
                               CircleAvatar(
                                 radius: 32,
-                                backgroundColor: Colors.teal[100],
+                                backgroundColor: Colors.indigo[100],
                                 child: Text(
                                   _authController.currentUser.value?.name.substring(0, 1).toUpperCase() ?? 'S',
-                                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.teal[900]),
+                                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo[900]),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -582,11 +582,11 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        Icon(Icons.phone_iphone_rounded, size: 14, color: Colors.teal[100]),
+                                        Icon(Icons.phone_iphone_rounded, size: 14, color: Colors.indigo[100]),
                                         const SizedBox(width: 4),
                                         Text(
                                           _authController.currentUser.value?.mobileNumber ?? 'Mobile Not Verified',
-                                          style: TextStyle(fontSize: 13, color: Colors.teal[50]),
+                                          style: TextStyle(fontSize: 13, color: Colors.indigo[50]),
                                         ),
                                       ],
                                     ),
@@ -622,7 +622,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                         final double lng = _mapController.currentPosition.value.longitude;
                                         return Text(
                                           'AgriHub Center, coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
-                                          style: TextStyle(color: Colors.teal[50], fontSize: 11),
+                                          style: TextStyle(color: Colors.indigo[50], fontSize: 11),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         );
@@ -656,9 +656,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
               delegate: _SliverAppBarDelegate(
                 TabBar(
                   controller: _tabController,
-                  labelColor: Colors.teal[900],
+                  labelColor: Colors.indigo[900],
                   unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: Colors.teal,
+                  indicatorColor: Colors.indigo,
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   tabs: const [
@@ -728,7 +728,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
             _showAddEquipmentSheet();
           }
         },
-        backgroundColor: Colors.teal[700],
+        backgroundColor: Colors.indigo[700],
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -740,13 +740,13 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.teal[100]),
+        Icon(icon, size: 16, color: Colors.indigo[100]),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
-            Text(label, style: TextStyle(color: Colors.teal[150], fontSize: 10)),
+            Text(label, style: TextStyle(color: Colors.indigo[100], fontSize: 10)),
           ],
         ),
       ],
@@ -778,10 +778,10 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.teal[50],
+                color: Colors.indigo[50],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.agriculture_rounded, size: 30, color: Colors.teal[700]),
+              child: Icon(Icons.agriculture_rounded, size: 30, color: Colors.indigo[700]),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -817,7 +817,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
             const SizedBox(width: 10),
             Text(
               item.price,
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal[800], fontSize: 15),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[800], fontSize: 15),
             ),
           ],
         ),
@@ -875,7 +875,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                     children: [
                       Text(
                         item.price,
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14),
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 14),
                       ),
                       Row(
                         children: [
