@@ -117,4 +117,31 @@ class BookingRepository {
       throw Exception(e.response?.data['message'] ?? 'Failed to create equipment');
     }
   }
+
+  Future<EquipmentModel> updateEquipment(String id, EquipmentModel equipment) async {
+    try {
+      final response = await _apiClient.dio.put(
+        '/api/equipments/$id',
+        data: equipment.toJson(),
+      );
+      if (response.data['success'] == true) {
+        return EquipmentModel.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to update equipment');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to update equipment');
+    }
+  }
+
+  Future<void> deleteEquipment(String id) async {
+    try {
+      final response = await _apiClient.dio.delete('/api/equipments/$id');
+      if (response.data['success'] != true) {
+        throw Exception(response.data['message'] ?? 'Failed to delete equipment');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Failed to delete equipment');
+    }
+  }
 }

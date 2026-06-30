@@ -53,6 +53,37 @@ namespace CooRent.Api.Api.Controllers
             return Ok(ApiResponse<Equipment>.SuccessResponse(equipment, "Equipment added successfully"));
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] Equipment updatedEquipment)
+        {
+            var existing = await _context.Equipments.FindAsync(id);
+            if (existing == null)
+                return NotFound(ApiResponse<string>.FailureResponse("Equipment not found"));
+
+            existing.EquipmentName = updatedEquipment.EquipmentName;
+            existing.Description = updatedEquipment.Description;
+            existing.Price = updatedEquipment.Price;
+            existing.Latitude = updatedEquipment.Latitude;
+            existing.Longitude = updatedEquipment.Longitude;
+            existing.LocationName = updatedEquipment.LocationName;
+            existing.EquipmentImages = updatedEquipment.EquipmentImages;
+
+            await _context.SaveChangesAsync();
+            return Ok(ApiResponse<Equipment>.SuccessResponse(existing, "Equipment updated successfully"));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var existing = await _context.Equipments.FindAsync(id);
+            if (existing == null)
+                return NotFound(ApiResponse<string>.FailureResponse("Equipment not found"));
+
+            _context.Equipments.Remove(existing);
+            await _context.SaveChangesAsync();
+            return Ok(ApiResponse<string>.SuccessResponse("Equipment deleted successfully"));
+        }
+
         private async Task<string> ResolveLocationNameAsync(double lat, double lng)
         {
             try

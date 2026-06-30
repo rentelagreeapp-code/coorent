@@ -1283,12 +1283,15 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : catImageUrl;
 
     return GestureDetector(
-      onTap: () {
-        Get.to(() => EquipmentDetailView(
+      onTap: () async {
+        final result = await Get.to(() => EquipmentDetailView(
               item: item,
               categoryName: catName,
               categoryImageUrl: catImageUrl,
             ));
+        if (result == true) {
+          loadAllData();
+        }
       },
       child: Card(
         elevation: 3,
