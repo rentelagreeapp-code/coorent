@@ -298,18 +298,16 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                               final cat = categories[index];
                               final isSelected = cat == _selectedCategory;
 
-                              // Map category names to illustrative icons
-                              IconData iconData = Icons.agriculture_rounded;
+                              // Map category names to illustrative network image URLs
+                              String imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png';
                               if (cat.toLowerCase().contains('tractor')) {
-                                iconData = Icons.agriculture_rounded;
+                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png';
                               } else if (cat.toLowerCase().contains('jcb')) {
-                                iconData = Icons.construction_rounded;
+                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_5rrtf25rrtf25rrt-removebg-preview.png';
                               } else if (cat.toLowerCase().contains('car')) {
-                                iconData = Icons.directions_car_rounded;
+                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_5pxb2o5pxb2o5pxb-removebg-preview.png';
                               } else if (cat.toLowerCase().contains('drone')) {
-                                iconData = Icons.flight_rounded;
-                              } else {
-                                iconData = Icons.build_circle_rounded;
+                                imgUrl = 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_6hszwz6hszwz6hsz-removebg-preview.png';
                               }
 
                               return AnimatedScale(
@@ -328,28 +326,36 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                     children: [
                                       AnimatedContainer(
                                         duration: const Duration(milliseconds: 250),
-                                        padding: const EdgeInsets.all(16),
+                                        padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: isSelected ? Colors.indigo : Colors.grey[100],
+                                          color: isSelected ? Colors.indigo[50] : Colors.grey[100],
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: isSelected ? Colors.indigoAccent : Colors.grey[300]!,
-                                            width: isSelected ? 3 : 1,
+                                            color: isSelected ? Colors.indigo : Colors.grey[300]!,
+                                            width: isSelected ? 2.5 : 1,
                                           ),
                                           boxShadow: isSelected
                                               ? [
                                                   BoxShadow(
-                                                    color: Colors.indigo.withOpacity(0.35),
-                                                    blurRadius: 10,
+                                                    color: Colors.indigo.withOpacity(0.2),
+                                                    blurRadius: 8,
                                                     offset: const Offset(0, 4),
                                                   )
                                                 ]
                                               : [],
                                         ),
-                                        child: Icon(
-                                          iconData,
-                                          size: 32,
-                                          color: isSelected ? Colors.white : Colors.indigo[800],
+                                        child: Image.network(
+                                          imgUrl,
+                                          width: 44,
+                                          height: 44,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Icon(
+                                              Icons.agriculture_rounded,
+                                              size: 32,
+                                              color: isSelected ? Colors.indigo : Colors.grey[400],
+                                            );
+                                          },
                                         ),
                                       ),
                                       const SizedBox(height: 8),
