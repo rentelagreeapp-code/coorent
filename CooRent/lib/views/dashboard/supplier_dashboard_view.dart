@@ -33,6 +33,10 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   double? _customEquipmentLng;
   final _customEquipmentCity = ''.obs;
 
+  int _currentServiceStep = 1;
+  String _pricePeriod = 'Day';
+  final _priceAmountController = TextEditingController();
+
   late TabController _tabController;
 
   // Forms
@@ -78,6 +82,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     _sTitleController.dispose();
     _sDescriptionController.dispose();
     _sPriceController.dispose();
+    _priceAmountController.dispose();
     _sImageUrlController.dispose();
     _sLatController.dispose();
     _sLngController.dispose();
@@ -319,6 +324,15 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       viewportFraction: 0.35,
     );
 
+    _currentServiceStep = 1;
+    _pricePeriod = 'Day';
+    _priceAmountController.clear();
+
+    // Populate initial default category if available
+    if (services.isNotEmpty && _selectedCategory == null) {
+      _selectedCategory = services[initialIdx >= 0 ? initialIdx : 0].categoryName;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -342,12 +356,23 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Add Rental Item',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Add Rental Item',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Step $_currentServiceStep of 3: ${_currentServiceStep == 1 ? "Choose Rental Item" : _currentServiceStep == 2 ? "Equipment Details" : "Pricing & Location"}',
+                                style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -355,287 +380,462 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Select Category (Swipe to Choose Center Item)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Obx(() {
-                        if (services.isEmpty) return const Center(child: Text('No categories loaded.'));
-                        return SizedBox(
-                          height: 130,
-                          child: PageView.builder(
-                            controller: pageController,
-                            onPageChanged: (index) {
-                              setSheetState(() {
-                                _selectedCategory = services[index].categoryName;
-                              });
-                            },
-                            itemCount: services.length,
-                            itemBuilder: (context, index) {
-                              final serviceItem = services[index];
-                              final cat = serviceItem.categoryName;
-                              final imgUrl = serviceItem.imageUrl;
-                              final isSelected = cat == _selectedCategory;
-
-                              return AnimatedScale(
-                                scale: isSelected ? 1.18 : 0.82,
-                                duration: const Duration(milliseconds: 250),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    pageController.animateToPage(
-                                      index,
-                                      duration: const Duration(milliseconds: 350),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  },
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      AnimatedContainer(
-                                        duration: const Duration(milliseconds: 250),
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? Colors.indigo[50] : Colors.grey[100],
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isSelected ? Colors.indigo : Colors.grey[300]!,
-                                            width: isSelected ? 2.5 : 1,
-                                          ),
-                                          boxShadow: isSelected
-                                              ? [
-                                                  BoxShadow(
-                                                    color: Colors.indigo.withOpacity(0.2),
-                                                    blurRadius: 8,
-                                                    offset: const Offset(0, 4),
-                                                  )
-                                                ]
-                                              : [],
-                                        ),
-                                        child: Image.network(
-                                          imgUrl,
-                                          width: 44,
-                                          height: 44,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Icon(
-                                              Icons.agriculture_rounded,
-                                              size: 32,
-                                              color: isSelected ? Colors.indigo : Colors.grey[400],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        cat,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                          color: isSelected ? Colors.indigo[900] : Colors.grey[600],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      }),
-                      Obx(() {
-                        final suggestions = services.where((s) => s.categoryName == _selectedCategory).toList();
-                        if (suggestions.isEmpty) return const SizedBox();
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Suggested Templates:',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black54),
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              height: 38,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: suggestions.length,
-                                itemBuilder: (context, index) {
-                                  final sug = suggestions[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: ActionChip(
-                                      label: Text(sug.title, style: const TextStyle(fontSize: 12)),
-                                      backgroundColor: Colors.indigo[50],
-                                      onPressed: () {
-                                        setSheetState(() {
-                                          _sTitleController.text = sug.title;
-                                          _sDescriptionController.text = sug.description;
-                                          _sPriceController.text = sug.priceDetails;
-                                        });
-                                      },
-                                    ),
-                                  );
-                                },
+                      const SizedBox(height: 8),
+                      // Linear step indicator bar
+                      Row(
+                        children: List.generate(3, (idx) {
+                          final stepIdx = idx + 1;
+                          final isActive = stepIdx <= _currentServiceStep;
+                          return Expanded(
+                            child: Container(
+                              height: 5,
+                              margin: EdgeInsets.only(right: idx < 2 ? 6.0 : 0.0),
+                              decoration: BoxDecoration(
+                                color: isActive ? Colors.indigo : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(2.5),
                               ),
                             ),
-                            const SizedBox(height: 8),
-                          ],
-                        );
-                      }),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _sTitleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Equipment / Listing Title',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.title_rounded),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // STEP 1: CHOOSE RENTAL ITEM (Category)
+                      if (_currentServiceStep == 1) ...[
+                        const Text(
+                          'Select Category (Swipe to Choose Center Item)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
+                          textAlign: TextAlign.center,
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Enter title' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _sDescriptionController,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.description_outlined),
-                        ),
-                        validator: (val) => val == null || val.isEmpty ? 'Enter description' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _sPriceController,
-                        decoration: const InputDecoration(
-                          labelText: 'Price Details (e.g. ₹2000 / Day)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.currency_rupee_rounded),
-                        ),
-                        validator: (val) => val == null || val.isEmpty ? 'Enter price' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Upload Equipment Photos (Select 2 to 5 images)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
-                      ),
-                      const SizedBox(height: 8),
-                      Obx(() {
-                        return SizedBox(
-                          height: 90,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _pickedPhotos.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index == _pickedPhotos.length) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                    if (_pickedPhotos.length >= 5) {
-                                      Get.snackbar('Limit Reached', 'You can upload maximum 5 photos',
-                                          snackPosition: SnackPosition.BOTTOM,
-                                          backgroundColor: Colors.orange,
-                                          colorText: Colors.white);
-                                      return;
-                                    }
-                                    final XFile? file = await _picker.pickImage(
-                                      source: ImageSource.gallery,
-                                    );
-                                    if (file != null) {
-                                      _pickedPhotos.add(File(file.path));
-                                    }
-                                  },
-                                  child: Container(
-                                    width: 80,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.grey[300]!),
+                        const SizedBox(height: 12),
+                        Obx(() {
+                          if (services.isEmpty) return const Center(child: Text('No categories loaded.'));
+                          return SizedBox(
+                            height: 130,
+                            child: PageView.builder(
+                              controller: pageController,
+                              onPageChanged: (index) {
+                                setSheetState(() {
+                                  _selectedCategory = services[index].categoryName;
+                                });
+                              },
+                              itemCount: services.length,
+                              itemBuilder: (context, index) {
+                                final serviceItem = services[index];
+                                final cat = serviceItem.categoryName;
+                                final imgUrl = serviceItem.imageUrl;
+                                final isSelected = cat == _selectedCategory;
+
+                                return AnimatedScale(
+                                  scale: isSelected ? 1.18 : 0.82,
+                                  duration: const Duration(milliseconds: 250),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      pageController.animateToPage(
+                                        index,
+                                        duration: const Duration(milliseconds: 350),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        AnimatedContainer(
+                                          duration: const Duration(milliseconds: 250),
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? Colors.indigo[50] : Colors.grey[100],
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isSelected ? Colors.indigo : Colors.grey[300]!,
+                                              width: isSelected ? 2.5 : 1,
+                                            ),
+                                            boxShadow: isSelected
+                                                ? [
+                                                    BoxShadow(
+                                                      color: Colors.indigo.withOpacity(0.2),
+                                                      blurRadius: 8,
+                                                      offset: const Offset(0, 4),
+                                                    )
+                                                  ]
+                                                : [],
+                                          ),
+                                          child: Image.network(
+                                            imgUrl,
+                                            width: 44,
+                                            height: 44,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Icon(
+                                                Icons.agriculture_rounded,
+                                                size: 32,
+                                                color: isSelected ? Colors.indigo : Colors.grey[400],
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          cat,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                            color: isSelected ? Colors.indigo[900] : Colors.grey[600],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                    child: const Icon(Icons.add_a_photo_outlined, size: 28, color: Colors.indigo),
                                   ),
                                 );
-                              }
+                              },
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            setSheetState(() {
+                              _currentServiceStep = 2;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Next: Equipment details ', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Icon(Icons.arrow_forward_rounded, size: 18),
+                            ],
+                          ),
+                        ),
+                      ],
 
-                              final File imageFile = _pickedPhotos[index];
-                              return Stack(
-                                children: [
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    margin: const EdgeInsets.only(right: 8, top: 4),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      image: DecorationImage(
-                                        image: FileImage(imageFile),
-                                        fit: BoxFit.cover,
+                      // STEP 2: EQUIPMENT DETAILS & DESCRIPTION WITH SUGGESTIONS
+                      if (_currentServiceStep == 2) ...[
+                        Obx(() {
+                          final suggestions = services.where((s) => s.categoryName == _selectedCategory).toList();
+                          if (suggestions.isEmpty) return const SizedBox();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Suggested Templates:',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black54),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 38,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: suggestions.length,
+                                  itemBuilder: (context, index) {
+                                    final sug = suggestions[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: ActionChip(
+                                        label: Text(sug.title, style: const TextStyle(fontSize: 12)),
+                                        backgroundColor: Colors.indigo[50],
+                                        onPressed: () {
+                                          setSheetState(() {
+                                            _sTitleController.text = sug.title;
+                                            _sDescriptionController.text = sug.description;
+                                            
+                                            // Prepopulate split price
+                                            String price = sug.priceDetails.replaceAll('₹', '').trim();
+                                            if (price.contains('/')) {
+                                              var parts = price.split('/');
+                                              _priceAmountController.text = parts[0].trim();
+                                              String period = parts[1].trim().toLowerCase();
+                                              if (period.contains('day')) {
+                                                _pricePeriod = 'Day';
+                                              } else if (period.contains('hour') || period.contains('hr')) {
+                                                _pricePeriod = 'Hour';
+                                              }
+                                            } else {
+                                              _priceAmountController.text = price;
+                                            }
+                                          });
+                                        },
                                       ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 0,
-                                    right: 2,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _pickedPhotos.removeAt(index);
-                                      },
-                                      child: const CircleAvatar(
-                                        radius: 10,
-                                        backgroundColor: Colors.red,
-                                        child: Icon(Icons.close, size: 12, color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+                        }),
+                        TextFormField(
+                          controller: _sTitleController,
+                          decoration: const InputDecoration(
+                            labelText: 'Equipment / Listing Title',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.title_rounded),
                           ),
-                        );
-                      }),
-                      const SizedBox(height: 16),
-                      Obx(() => TextFormField(
-                        key: ValueKey(_customServiceCity.value),
-                        initialValue: _customServiceCity.value,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          labelText: 'Detected City',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.location_city_rounded),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.map_rounded, color: Colors.indigo),
-                            onPressed: () {
-                              _selectLocationOnMap(
-                                context: context,
-                                initialLat: _customServiceLat ?? _mapController.currentPosition.value.latitude,
-                                initialLng: _customServiceLng ?? _mapController.currentPosition.value.longitude,
-                                onLocationSelected: (lat, lng) async {
-                                  _customServiceLat = lat;
-                                  _customServiceLng = lng;
-                                  _customServiceCity.value = 'Loading location...';
-                                  final city = await _mapController.getCityNameFromCoords(lat, lng);
-                                  _customServiceCity.value = city;
-                                  setSheetState(() {});
+                          validator: (val) => val == null || val.isEmpty ? 'Enter title' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _sDescriptionController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: 'Description',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.description_outlined),
+                          ),
+                          validator: (val) => val == null || val.isEmpty ? 'Enter description' : null,
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  setSheetState(() {
+                                    _currentServiceStep = 1;
+                                  });
                                 },
-                              );
-                            },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Back', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_sTitleController.text.trim().isEmpty || _sDescriptionController.text.trim().isEmpty) {
+                                    Get.snackbar(
+                                      'Validation Error',
+                                      'Please fill in title and description',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.orange,
+                                      colorText: Colors.white,
+                                    );
+                                    return;
+                                  }
+                                  setSheetState(() {
+                                    _currentServiceStep = 3;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.indigo,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('Next ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    Icon(Icons.arrow_forward_rounded, size: 18),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      // STEP 3: PRICE DETAILS (Hour or Day), UPLOAD PHOTOS & DETECTED CITY
+                      if (_currentServiceStep == 3) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                controller: _priceAmountController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Price Amount (₹)',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                                ),
+                                validator: (val) => val == null || val.isEmpty ? 'Enter amount' : null,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 1,
+                              child: DropdownButtonFormField<String>(
+                                value: _pricePeriod,
+                                items: const [
+                                  DropdownMenuItem(value: 'Hour', child: Text('Hour')),
+                                  DropdownMenuItem(value: 'Day', child: Text('Day')),
+                                ],
+                                onChanged: (val) {
+                                  setSheetState(() {
+                                    _pricePeriod = val ?? 'Day';
+                                  });
+                                },
+                                decoration: const InputDecoration(
+                                  labelText: 'Period',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Upload Equipment Photos (Select 2 to 5 images)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 8),
+                        Obx(() {
+                          return SizedBox(
+                            height: 90,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _pickedPhotos.length + 1,
+                              itemBuilder: (context, index) {
+                                if (index == _pickedPhotos.length) {
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      if (_pickedPhotos.length >= 5) {
+                                        Get.snackbar('Limit Reached', 'You can upload maximum 5 photos',
+                                            snackPosition: SnackPosition.BOTTOM,
+                                            backgroundColor: Colors.orange,
+                                            colorText: Colors.white);
+                                        return;
+                                      }
+                                      final XFile? file = await _picker.pickImage(
+                                        source: ImageSource.gallery,
+                                      );
+                                      if (file != null) {
+                                        _pickedPhotos.add(File(file.path));
+                                      }
+                                    },
+                                    child: Container(
+                                      width: 80,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.grey[300]!),
+                                      ),
+                                      child: const Icon(Icons.add_a_photo_outlined, size: 28, color: Colors.indigo),
+                                    ),
+                                  );
+                                }
+
+                                final File imageFile = _pickedPhotos[index];
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      margin: const EdgeInsets.only(right: 8, top: 4),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        image: DecorationImage(
+                                          image: FileImage(imageFile),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      right: 2,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          _pickedPhotos.removeAt(index);
+                                        },
+                                        child: const CircleAvatar(
+                                          radius: 10,
+                                          backgroundColor: Colors.red,
+                                          child: Icon(Icons.close, size: 12, color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 16),
+                        Obx(() => TextFormField(
+                          key: ValueKey(_customServiceCity.value),
+                          initialValue: _customServiceCity.value,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            labelText: 'Detected City',
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const Icon(Icons.location_city_rounded),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.map_rounded, color: Colors.indigo),
+                              onPressed: () {
+                                _selectLocationOnMap(
+                                  context: context,
+                                  initialLat: _customServiceLat ?? _mapController.currentPosition.value.latitude,
+                                  initialLng: _customServiceLng ?? _mapController.currentPosition.value.longitude,
+                                  onLocationSelected: (lat, lng) async {
+                                    _customServiceLat = lat;
+                                    _customServiceLng = lng;
+                                    _customServiceCity.value = 'Loading location...';
+                                    final city = await _mapController.getCityNameFromCoords(lat, lng);
+                                    _customServiceCity.value = city;
+                                    setSheetState(() {});
+                                  },
+                                );
+                              },
+                            ),
                           ),
+                        )),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  setSheetState(() {
+                                    _currentServiceStep = 2;
+                                  });
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Back', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  final amt = _priceAmountController.text.trim();
+                                  if (amt.isEmpty) {
+                                    Get.snackbar('Validation Error', 'Please enter a price amount',
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        backgroundColor: Colors.orange,
+                                        colorText: Colors.white);
+                                    return;
+                                  }
+                                  _sPriceController.text = '₹$amt / $_pricePeriod';
+                                  _addService();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.indigo,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
                         ),
-                      )),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _addService,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
+                      ],
                     ],
                   ),
                 ),
