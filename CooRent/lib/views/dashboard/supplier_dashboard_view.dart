@@ -862,17 +862,16 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Primary Supplying Hub',
-                                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
-                                      ),
+                                      Obx(() => Text(
+                                        _mapController.currentCity.value,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                                      )),
                                       const SizedBox(height: 2),
                                       Obx(() {
                                         final double lat = _mapController.currentPosition.value.latitude;
                                         final double lng = _mapController.currentPosition.value.longitude;
-                                        final String city = _mapController.currentCity.value;
                                         return Text(
-                                          '$city Hub, coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
+                                          'Coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
                                           style: TextStyle(color: Colors.indigo[50], fontSize: 11),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -889,9 +888,8 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Obx(() => _buildStatItem('Active Items', '${equipments.length}', Icons.agriculture)),
-                              _buildStatItem('Supplying Radius', '15 km', Icons.explore_outlined),
-                              _buildStatItem('Verification', 'Verified', Icons.verified_user_outlined),
+                              Obx(() => _buildStatItem('Total Rental Items', '${equipments.length}')),
+                              _buildStatItem('Verification', 'Verified', icon: Icons.verified_user_outlined, color: Colors.greenAccent),
                             ],
                           ),
                         ],
@@ -987,17 +985,21 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon) {
+  Widget _buildStatItem(String label, String value, {IconData? icon, Color? color}) {
+    final textColor = color ?? Colors.white;
+    final iconColor = color ?? Colors.indigo[100];
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.indigo[100]),
-        const SizedBox(width: 6),
+        if (icon != null) ...[
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 6),
+        ],
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
-            Text(label, style: TextStyle(color: Colors.indigo[100], fontSize: 10)),
+            Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
+            Text(label, style: TextStyle(color: color?.withOpacity(0.8) ?? Colors.indigo[100], fontSize: 10)),
           ],
         ),
       ],
