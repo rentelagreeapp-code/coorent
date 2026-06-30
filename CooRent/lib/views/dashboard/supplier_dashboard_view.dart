@@ -181,6 +181,8 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
           options: Options(
             headers: {
               'Content-Type': 'image/jpeg',
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5ZHp4Y2h2bmt3cHVjbWdvbWR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MDY3NDMsImV4cCI6MjA5ODI4Mjc0M30.e6mk7nWq6cgHK0f9m_tIhPy84PFDanPuNfKYIsjljgI',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5ZHp4Y2h2bmt3cHVjbWdvbWR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MDY3NDMsImV4cCI6MjA5ODI4Mjc0M30.e6mk7nWq6cgHK0f9m_tIhPy84PFDanPuNfKYIsjljgI',
             },
           ),
         );
