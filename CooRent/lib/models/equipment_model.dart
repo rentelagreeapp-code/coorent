@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class EquipmentModel {
   final String id;
   final String categoryId;
@@ -24,17 +26,36 @@ class EquipmentModel {
   });
 
   factory EquipmentModel.fromJson(Map<String, dynamic> json) {
+    var rawImages = json['equipmentImages'] ?? json['EquipmentImages'];
+    List<String> parsedImages = [];
+    if (rawImages != null) {
+      if (rawImages is List) {
+        parsedImages = List<String>.from(rawImages.map((e) => e.toString()));
+      } else if (rawImages is String && rawImages.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(rawImages);
+          if (decoded is List) {
+            parsedImages = List<String>.from(decoded.map((e) => e.toString()));
+          } else {
+            parsedImages = [rawImages];
+          }
+        } catch (_) {
+          parsedImages = [rawImages];
+        }
+      }
+    }
+
     return EquipmentModel(
-      id: json['id'] ?? '',
-      categoryId: json['categoryId'] ?? '',
-      userId: json['userId'] ?? '',
-      equipmentName: json['equipmentName'] ?? '',
-      description: json['description'] ?? '',
-      price: json['price'] ?? '',
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      equipmentImages: List<String>.from(json['equipmentImages'] ?? []),
-      locationName: json['locationName'] ?? '',
+      id: json['id']?.toString() ?? json['Id']?.toString() ?? '',
+      categoryId: json['categoryId']?.toString() ?? json['CategoryId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? json['UserId']?.toString() ?? '',
+      equipmentName: json['equipmentName']?.toString() ?? json['EquipmentName']?.toString() ?? '',
+      description: json['description']?.toString() ?? json['Description']?.toString() ?? '',
+      price: json['price']?.toString() ?? json['Price']?.toString() ?? '',
+      latitude: (json['latitude'] ?? json['Latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] ?? json['Longitude'] as num?)?.toDouble() ?? 0.0,
+      equipmentImages: parsedImages,
+      locationName: json['locationName']?.toString() ?? json['LocationName']?.toString() ?? '',
     );
   }
 
