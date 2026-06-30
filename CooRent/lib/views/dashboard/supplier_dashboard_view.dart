@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:coorent/controllers/map_controller.dart';
 import 'package:coorent/models/rental_service_model.dart';
 import 'package:coorent/models/equipment_model.dart';
+import 'package:coorent/views/dashboard/equipment_detail_view.dart';
 import 'package:coorent/repositories/booking_repository.dart';
 import 'package:coorent/controllers/auth_controller.dart';
 import 'package:flutter_map/flutter_map.dart' as fm;
@@ -1281,80 +1282,89 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   Widget _buildGridCard(EquipmentModel item, String catName, String? catImageUrl) {
     final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : catImageUrl;
 
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image top header
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                image: imgUrl != null && imgUrl.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(imgUrl),
-                        fit: BoxFit.cover,
-                      )
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => EquipmentDetailView(
+              item: item,
+              categoryName: catName,
+              categoryImageUrl: catImageUrl,
+            ));
+      },
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image top header
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  image: imgUrl != null && imgUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(imgUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: Colors.grey[100],
+                ),
+                child: imgUrl == null || imgUrl.isEmpty
+                    ? Center(child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]))
                     : null,
-                color: Colors.grey[100],
               ),
-              child: imgUrl == null || imgUrl.isEmpty
-                  ? Center(child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]))
-                  : null,
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.equipmentName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  catName,
-                  style: TextStyle(fontSize: 10, color: Colors.indigo[700], fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.price,
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 11),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, size: 10, color: Colors.orangeAccent),
-                        const SizedBox(width: 1),
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 45),
-                          child: Text(
-                            item.locationName.isNotEmpty ? item.locationName : 'Unknown',
-                            style: TextStyle(fontSize: 9, color: Colors.grey[500]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.equipmentName,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    catName,
+                    style: TextStyle(fontSize: 10, color: Colors.indigo[700], fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.price,
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 10, color: Colors.orangeAccent),
+                          const SizedBox(width: 1),
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 45),
+                            child: Text(
+                              item.locationName.isNotEmpty ? item.locationName : 'Unknown',
+                              style: TextStyle(fontSize: 9, color: Colors.grey[500]),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
