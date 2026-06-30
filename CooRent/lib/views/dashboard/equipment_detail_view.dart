@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:coorent/models/equipment_model.dart';
 
-class EquipmentDetailView extends StatelessWidget {
+class EquipmentDetailView extends StatefulWidget {
   final EquipmentModel item;
   final String categoryName;
   final String? categoryImageUrl;
@@ -14,10 +14,17 @@ class EquipmentDetailView extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<EquipmentDetailView> createState() => _EquipmentDetailViewState();
+}
+
+class _EquipmentDetailViewState extends State<EquipmentDetailView> {
+  int _currentImageIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final List<String> images = item.equipmentImages.isNotEmpty
-        ? item.equipmentImages
-        : (categoryImageUrl != null && categoryImageUrl!.isNotEmpty ? [categoryImageUrl!] : []);
+    final List<String> images = widget.item.equipmentImages.isNotEmpty
+        ? widget.item.equipmentImages
+        : (widget.categoryImageUrl != null && widget.categoryImageUrl!.isNotEmpty ? [widget.categoryImageUrl!] : []);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -36,6 +43,11 @@ class EquipmentDetailView extends StatelessWidget {
                   if (images.isNotEmpty)
                     PageView.builder(
                       itemCount: images.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentImageIndex = index;
+                        });
+                      },
                       itemBuilder: (context, index) {
                         return Image.network(
                           images[index],
@@ -72,9 +84,11 @@ class EquipmentDetailView extends StatelessWidget {
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white70,
+                              color: index == _currentImageIndex
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.4),
                             ),
                           ),
                         ),
@@ -102,12 +116,12 @@ class EquipmentDetailView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          categoryName,
+                          widget.categoryName,
                           style: TextStyle(color: Colors.indigo[900], fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                       ),
                       Text(
-                        item.price,
+                        widget.item.price,
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
                       ),
                     ],
@@ -115,7 +129,7 @@ class EquipmentDetailView extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Title
                   Text(
-                    item.equipmentName,
+                    widget.item.equipmentName,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 8),
@@ -125,7 +139,9 @@ class EquipmentDetailView extends StatelessWidget {
                       const Icon(Icons.location_on, size: 16, color: Colors.orangeAccent),
                       const SizedBox(width: 4),
                       Text(
-                        item.locationName.isNotEmpty ? item.locationName : 'Coordinates: [${item.latitude.toStringAsFixed(4)}, ${item.longitude.toStringAsFixed(4)}]',
+                        widget.item.locationName.isNotEmpty
+                            ? widget.item.locationName
+                            : 'Coordinates: [${widget.item.latitude.toStringAsFixed(4)}, ${widget.item.longitude.toStringAsFixed(4)}]',
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
@@ -141,7 +157,7 @@ class EquipmentDetailView extends StatelessWidget {
                   const SizedBox(height: 8),
                   // Description Text
                   Text(
-                    item.description.isNotEmpty ? item.description : 'No description provided.',
+                    widget.item.description.isNotEmpty ? widget.item.description : 'No description provided.',
                     style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
                   ),
                   const SizedBox(height: 30),
