@@ -16,6 +16,7 @@ namespace CooRent.Api.Infrastructure.Data
         public DbSet<RentalService> RentalServices => Set<RentalService>();
         public DbSet<Admin> Admins => Set<Admin>();
         public DbSet<Equipment> Equipments => Set<Equipment>();
+        public DbSet<VehicleSuggestion> VehicleSuggestions => Set<VehicleSuggestion>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
