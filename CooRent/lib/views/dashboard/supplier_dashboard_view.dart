@@ -233,6 +233,12 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     _sLatController.text = _mapController.currentPosition.value.latitude.toString();
     _sLngController.text = _mapController.currentPosition.value.longitude.toString();
 
+    final initialIdx = categories.indexOf(_selectedCategory ?? categories.first);
+    final pageController = PageController(
+      initialPage: initialIdx >= 0 ? initialIdx : 0,
+      viewportFraction: 0.35,
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -270,22 +276,98 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ],
                       ),
                       const SizedBox(height: 16),
+                      const Text(
+                        'Select Category (Swipe to Choose Center Item)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
                       Obx(() {
-                        if (categories.isEmpty) return const Text('No categories loaded.');
-                        return DropdownButtonFormField<String>(
-                          value: _selectedCategory ?? categories.first,
-                          items: categories
-                              .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                              .toList(),
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _selectedCategory = val;
-                            });
-                          },
-                          decoration: const InputDecoration(
-                            labelText: 'Select Category',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.category_rounded),
+                        if (categories.isEmpty) return const Center(child: Text('No categories loaded.'));
+                        return SizedBox(
+                          height: 130,
+                          child: PageView.builder(
+                            controller: pageController,
+                            onPageChanged: (index) {
+                              setSheetState(() {
+                                _selectedCategory = categories[index];
+                              });
+                            },
+                            itemCount: categories.length,
+                            itemBuilder: (context, index) {
+                              final cat = categories[index];
+                              final isSelected = cat == _selectedCategory;
+
+                              // Map category names to illustrative icons
+                              IconData iconData = Icons.agriculture_rounded;
+                              if (cat.toLowerCase().contains('tractor')) {
+                                iconData = Icons.agriculture_rounded;
+                              } else if (cat.toLowerCase().contains('jcb')) {
+                                iconData = Icons.construction_rounded;
+                              } else if (cat.toLowerCase().contains('car')) {
+                                iconData = Icons.directions_car_rounded;
+                              } else if (cat.toLowerCase().contains('drone')) {
+                                iconData = Icons.flight_rounded;
+                              } else {
+                                iconData = Icons.build_circle_rounded;
+                              }
+
+                              return AnimatedScale(
+                                scale: isSelected ? 1.18 : 0.82,
+                                duration: const Duration(milliseconds: 250),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    pageController.animateToPage(
+                                      index,
+                                      duration: const Duration(milliseconds: 350),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 250),
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? Colors.indigo : Colors.grey[100],
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected ? Colors.indigoAccent : Colors.grey[300]!,
+                                            width: isSelected ? 3 : 1,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: Colors.indigo.withOpacity(0.35),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  )
+                                                ]
+                                              : [],
+                                        ),
+                                        child: Icon(
+                                          iconData,
+                                          size: 32,
+                                          color: isSelected ? Colors.white : Colors.indigo[800],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        cat,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          color: isSelected ? Colors.indigo[900] : Colors.grey[600],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         );
                       }),
