@@ -15,7 +15,9 @@ class EquipmentDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imgUrl = item.equipmentImages.isNotEmpty ? item.equipmentImages.first : categoryImageUrl;
+    final List<String> images = item.equipmentImages.isNotEmpty
+        ? item.equipmentImages
+        : (categoryImageUrl != null && categoryImageUrl!.isNotEmpty ? [categoryImageUrl!] : []);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -31,10 +33,15 @@ class EquipmentDetailView extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (imgUrl != null && imgUrl.isNotEmpty)
-                    Image.network(
-                      imgUrl,
-                      fit: BoxFit.cover,
+                  if (images.isNotEmpty)
+                    PageView.builder(
+                      itemCount: images.length,
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          images[index],
+                          fit: BoxFit.cover,
+                        );
+                      },
                     )
                   else
                     Container(
@@ -51,6 +58,28 @@ class EquipmentDetailView extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Page Indicator dots if there are multiple images
+                  if (images.length > 1)
+                    Positioned(
+                      bottom: 16,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          images.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
