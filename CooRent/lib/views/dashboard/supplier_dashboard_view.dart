@@ -1298,20 +1298,27 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
           children: [
             // Image top header
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  image: imgUrl != null && imgUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(imgUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  color: Colors.grey[100],
-                ),
-                child: imgUrl == null || imgUrl.isEmpty
-                    ? Center(child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]))
-                    : null,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: imgUrl != null && imgUrl.isNotEmpty
+                    ? Image.network(
+                        imgUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.indigo[50],
+                            alignment: Alignment.center,
+                            child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.indigo[50],
+                        alignment: Alignment.center,
+                        child: Icon(Icons.agriculture_rounded, size: 40, color: Colors.indigo[200]),
+                      ),
               ),
             ),
             // Content
