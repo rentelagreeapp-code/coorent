@@ -335,4 +335,9 @@ class MapController extends GetxController {
   void recenterMap() {
     fmMapController.move(currentPosition.value, 13.5);
   }
+
+  void resetRotation() {
+    fmMapController.rotate(0.0);
+    mapRotation.value = 0.0;
+  }
 }

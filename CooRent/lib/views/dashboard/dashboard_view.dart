@@ -283,45 +283,48 @@ class DashboardView extends StatelessWidget {
                 right: 16,
                 child: Obx(() {
                   final rotationRad = _mapController.mapRotation.value * (3.141592653589793 / 180.0);
-                  return Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
-                      ],
-                      border: Border.all(color: Colors.indigo.withOpacity(0.2), width: 1.5),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Positioned(
-                          top: 2,
-                          child: Text('N', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.red[700])),
-                        ),
-                        const Positioned(
-                          bottom: 2,
-                          child: Text('S', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
-                        ),
-                        const Positioned(
-                          right: 4,
-                          child: Text('E', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
-                        ),
-                        const Positioned(
-                          left: 4,
-                          child: Text('W', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
-                        ),
-                        Transform.rotate(
-                          angle: -rotationRad,
-                          child: const Icon(
-                            Icons.navigation_rounded,
-                            size: 18,
-                            color: Colors.indigo,
+                  return GestureDetector(
+                    onTap: _mapController.resetRotation,
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+                        ],
+                        border: Border.all(color: Colors.indigo.withOpacity(0.2), width: 1.5),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            top: 2,
+                            child: Text('N', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.red[700])),
                           ),
-                        ),
-                      ],
+                          const Positioned(
+                            bottom: 2,
+                            child: Text('S', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
+                          ),
+                          const Positioned(
+                            right: 4,
+                            child: Text('E', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
+                          ),
+                          const Positioned(
+                            left: 4,
+                            child: Text('W', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87)),
+                          ),
+                          Transform.rotate(
+                            angle: -rotationRad,
+                            child: const Icon(
+                              Icons.navigation_rounded,
+                              size: 18,
+                              color: Colors.indigo,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }),
