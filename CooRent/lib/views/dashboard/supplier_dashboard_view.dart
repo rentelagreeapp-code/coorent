@@ -76,11 +76,9 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   Future<void> loadAllData() async {
     isLoading.value = true;
     try {
-      // 1. Fetch RentalServices (Master Data)
       final serviceList = await _bookingRepository.getAllServices();
       services.assignAll(serviceList);
 
-      // Extract unique category names
       final uniqueCats = serviceList
           .map((item) => item.categoryName)
           .where((cat) => cat.isNotEmpty)
@@ -95,7 +93,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
         _eSelectedCategoryModel = serviceList.first;
       }
 
-      // 2. Fetch Equipments (Filtered by the stored UserId of the logged-in supplier)
       final String userId = _authController.currentUserId.value;
       if (userId.isNotEmpty) {
         final equipmentList = await _bookingRepository.getEquipmentsByUserId(userId);
@@ -134,7 +131,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
       images.add('https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png');
     }
 
-    // Link categoryId GUID dynamically from master category list
     String categoryGuid = '00000000-0000-0000-0000-000000000000';
     final matched = services.firstWhereOrNull((s) => s.categoryName == _selectedCategory);
     if (matched != null) {
@@ -188,7 +184,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
     final double lat = double.tryParse(_eLatController.text) ?? 0.0;
     final double lng = double.tryParse(_eLngController.text) ?? 0.0;
 
-    // Split comma separated image URLs
     final List<String> images = _eImagesController.text
         .split(',')
         .map((s) => s.trim())
@@ -266,7 +261,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         children: [
                           const Text(
                             'Add Rental Item',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -356,9 +351,10 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                       ElevatedButton(
                         onPressed: _addService,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
+                          backgroundColor: Colors.teal,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
@@ -405,7 +401,7 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         children: [
                           const Text(
                             'Add Detailed Equipment',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -414,8 +410,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ],
                       ),
                       const SizedBox(height: 16),
-
-                      // Category (from Master Data RentalServices table)
                       Obx(() {
                         if (services.isEmpty) {
                           return const Text('Loading master categories list...', style: TextStyle(color: Colors.red));
@@ -441,8 +435,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         );
                       }),
                       const SizedBox(height: 16),
-
-                      // Equipment Name
                       TextFormField(
                         controller: _eNameController,
                         decoration: const InputDecoration(
@@ -453,8 +445,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         validator: (val) => val == null || val.isEmpty ? 'Enter equipment name' : null,
                       ),
                       const SizedBox(height: 16),
-
-                      // Description
                       TextFormField(
                         controller: _eDescriptionController,
                         maxLines: 3,
@@ -466,8 +456,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         validator: (val) => val == null || val.isEmpty ? 'Enter description' : null,
                       ),
                       const SizedBox(height: 16),
-
-                      // Price
                       TextFormField(
                         controller: _ePriceController,
                         decoration: const InputDecoration(
@@ -478,8 +466,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         validator: (val) => val == null || val.isEmpty ? 'Enter pricing details' : null,
                       ),
                       const SizedBox(height: 16),
-
-                      // Equipment Images (comma separated)
                       TextFormField(
                         controller: _eImagesController,
                         decoration: const InputDecoration(
@@ -490,8 +476,6 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ),
                       ),
                       const SizedBox(height: 16),
-
-                      // Coordinates (Lat/Lng)
                       Row(
                         children: [
                           Expanded(
@@ -510,13 +494,13 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
                         ],
                       ),
                       const SizedBox(height: 24),
-
                       ElevatedButton(
                         onPressed: _addEquipment,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
+                          backgroundColor: Colors.teal,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: const Text('Add Equipment Listing', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
@@ -534,109 +518,209 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Supplier Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: loadAllData,
-          )
-        ],
-        bottom: TabBar(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            // Sliver app bar with Supplier Profile and location details
+            SliverAppBar(
+              expandedHeight: 280,
+              floating: false,
+              pinned: true,
+              backgroundColor: Colors.teal[800],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Gradient overlay background
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.teal[900]!, Colors.teal[600]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ),
+                    // Background design circle
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.08),
+                        ),
+                      ),
+                    ),
+                    // Main Supplier details column
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.teal[100],
+                                child: Text(
+                                  _authController.currentUser.value?.name.substring(0, 1).toUpperCase() ?? 'S',
+                                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.teal[900]),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _authController.currentUser.value?.name ?? 'Farmer Supplier',
+                                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.phone_iphone_rounded, size: 14, color: Colors.teal[100]),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _authController.currentUser.value?.mobileNumber ?? 'Mobile Not Verified',
+                                          style: TextStyle(fontSize: 13, color: Colors.teal[50]),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          // Glassmorphic Location & Address Container
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withOpacity(0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.my_location_rounded, color: Colors.orangeAccent, size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Primary Supplying Hub',
+                                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Obx(() {
+                                        final double lat = _mapController.currentPosition.value.latitude;
+                                        final double lng = _mapController.currentPosition.value.longitude;
+                                        return Text(
+                                          'AgriHub Center, coordinates: [${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}]',
+                                          style: TextStyle(color: Colors.teal[50], fontSize: 11),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          // Statistics banner
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Obx(() => _buildStatItem('Active Items', '${equipments.length}', Icons.agriculture)),
+                              _buildStatItem('Supplying Radius', '15 km', Icons.explore_outlined),
+                              _buildStatItem('Verification', 'Verified', Icons.verified_user_outlined),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Sliver persistent tab header
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverAppBarDelegate(
+                TabBar(
+                  controller: _tabController,
+                  labelColor: Colors.teal[900],
+                  unselectedLabelColor: Colors.grey[600],
+                  indicatorColor: Colors.teal,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  tabs: const [
+                    Tab(icon: Icon(Icons.list_alt_rounded), text: 'Active Services'),
+                    Tab(icon: Icon(Icons.grid_view_rounded), text: 'Detail Items'),
+                  ],
+                ),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
           controller: _tabController,
-          labelColor: Colors.indigo,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.indigo,
-          tabs: const [
-            Tab(icon: Icon(Icons.category_rounded), text: 'Rental Services'),
-            Tab(icon: Icon(Icons.agriculture_rounded), text: 'Detailed Equipments'),
+          children: [
+            // Tab 1: Active Services (Supplier's Equipments list)
+            Obx(() {
+              if (isLoading.value && equipments.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (equipments.isEmpty) {
+                return _buildEmptyState('No active items listed. Tap + to begin.');
+              }
+              return RefreshIndicator(
+                onRefresh: loadAllData,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: equipments.length,
+                  itemBuilder: (context, index) {
+                    final item = equipments[index];
+                    final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
+                    final catName = master?.categoryName ?? 'Other';
+
+                    return _buildServiceCard(item, catName);
+                  },
+                ),
+              );
+            }),
+
+            // Tab 2: Detailed Equipments grid-style list
+            Obx(() {
+              if (isLoading.value && equipments.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (equipments.isEmpty) {
+                return _buildEmptyState('No detailed equipment items registered.');
+              }
+              return RefreshIndicator(
+                onRefresh: loadAllData,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: equipments.length,
+                  itemBuilder: (context, index) {
+                    final item = equipments[index];
+                    return _buildDetailCard(item);
+                  },
+                ),
+              );
+            }),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // 1. Rental Services Tab (Displays Supplier's Equipments from Equipments table)
-          Obx(() {
-            if (isLoading.value && equipments.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (equipments.isEmpty) {
-              return const Center(child: Text('No rental items added yet.'));
-            }
-            return RefreshIndicator(
-              onRefresh: loadAllData,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: equipments.length,
-                itemBuilder: (context, index) {
-                  final item = equipments[index];
-                  // Find corresponding master service category name by matching CategoryId
-                  final master = services.firstWhereOrNull((s) => s.categoryId == item.categoryId);
-                  final catName = master?.categoryName ?? 'Other';
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: Icon(Icons.agriculture_outlined, color: Colors.indigo[400]),
-                      title: Text(item.equipmentName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Category: $catName\n${item.description}'),
-                      trailing: Text(item.price, style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
-                    ),
-                  );
-                },
-              ),
-            );
-          }),
-
-          // 2. Detailed Equipments Tab
-          Obx(() {
-            if (isLoading.value && equipments.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (equipments.isEmpty) {
-              return const Center(child: Text('No detailed equipments added yet.'));
-            }
-            return RefreshIndicator(
-              onRefresh: loadAllData,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: equipments.length,
-                itemBuilder: (context, index) {
-                  final item = equipments[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          color: Colors.grey[100],
-                          child: item.equipmentImages.isNotEmpty
-                              ? Image.network(
-                                  item.equipmentImages.first,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image),
-                                )
-                              : const Icon(Icons.image),
-                        ),
-                      ),
-                      title: Text(item.equipmentName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(item.description),
-                      trailing: Text(item.price, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                    ),
-                  );
-                },
-              ),
-            );
-          }),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           if (_tabController.index == 0) {
             _showAddServiceSheet();
@@ -644,10 +728,198 @@ class _SupplierDashboardViewState extends State<SupplierDashboardView> with Sing
             _showAddEquipmentSheet();
           }
         },
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.teal[700],
         foregroundColor: Colors.white,
-        child: const Icon(Icons.add_rounded),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Rental Item', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
+  }
+
+  Widget _buildStatItem(String label, String value, IconData icon) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: Colors.teal[100]),
+        const SizedBox(width: 6),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
+            Text(label, style: TextStyle(color: Colors.teal[150], fontSize: 10)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.layers_clear_rounded, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(message, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceCard(EquipmentModel item, String catName) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.teal[50],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.agriculture_rounded, size: 30, color: Colors.teal[700]),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.equipmentName,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      catName,
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              item.price,
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal[800], fontSize: 15),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(EquipmentModel item) {
+    final image = item.equipmentImages.isNotEmpty
+        ? item.equipmentImages.first
+        : 'https://wydzxchvnkwpucmgomdz.supabase.co/storage/v1/object/public/coorent/Gemini_Generated_Image_pfpns2pfpns2pfpn-removebg-preview%20(1).png';
+
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+            child: SizedBox(
+              width: 110,
+              height: 110,
+              child: Image.network(
+                image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[200],
+                  child: Icon(Icons.image, color: Colors.grey[400]),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    item.equipmentName,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item.price,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 12, color: Colors.orangeAccent),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${item.latitude.toStringAsFixed(2)}, ${item.longitude.toStringAsFixed(2)}',
+                            style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Custom Persistent Header Delegate for TabBar
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+
+  final TabBar _tabBar;
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.white,
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }
