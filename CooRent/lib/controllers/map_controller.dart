@@ -34,6 +34,7 @@ class MapController extends GetxController {
   // Selection & Highlight synchronization
   var highlightedEquipmentId = ''.obs;
   var selectedEquipment = Rxn<EquipmentModel>();
+  var mapRotation = 0.0.obs;
 
   @override
   void onInit() {
